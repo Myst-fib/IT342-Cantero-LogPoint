@@ -1,0 +1,234 @@
+/* NavBar.css */
+:root {
+  --sidebar-w: 240px;
+}
+
+/* SIDEBAR NAVIGATION */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--white);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 24px 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.logo-image {
+  width: auto;
+  height: 40px; /* Fixed height for consistency */
+  max-width: 180px; /* Prevents overly wide logos */
+  object-fit: contain;
+  display: block;
+}
+
+/* Alternative if you want a specific width instead of height */
+/* .logo-image {
+  width: 140px;
+  height: auto;
+  max-height: 50px;
+  object-fit: contain;
+  display: block;
+} */
+
+.nav-section {
+  padding: 16px 12px 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  padding: 0 12px;
+  margin-bottom: 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  color: var(--text-medium);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all .15s;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background: rgba(0, 74, 173, 0.07);
+  color: var(--primary-dark);
+}
+
+.nav-item.active {
+  background: rgba(0, 74, 173, 0.10);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  opacity: .7;
+  flex-shrink: 0;
+}
+
+.nav-item.active .nav-icon,
+.nav-item:hover .nav-icon {
+  opacity: 1;
+}
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.user-chip:hover {
+  background: var(--bg-light);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.user-role {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.logout-btn {
+  display: block;
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  background: transparent;
+  border: 1px solid var(--primary-dark);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.logout-btn:hover {
+  background: var(--primary-dark);
+  color: var(--white);
+}
+
+/* LOGOUT BANNER */
+.logout-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.logout-banner-inner {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px 32px;
+  box-shadow: 0 4px 24px rgba(0, 74, 173, 0.2);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  border: 1px solid var(--border-light);
+}
+
+.logout-message {
+  font-size: 16px;
+  color: var(--text-dark);
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.logout-actions .btn-sm {
+  padding: 8px 20px;
+  font-size: 14px;
+  min-width: 100px;
+}
+
+.logout-actions .btn-primary {
+  background: var(--gradient-primary);
+  color: var(--white);
+  border: none;
+}
+
+.logout-actions .btn-primary:hover {
+  background: var(--gradient-dark);
+}
+
+/* Scrollbar Styling */
+.nav-section::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-section::-webkit-scrollbar-thumb {
+  background: rgba(0, 74, 173, 0.2);
+  border-radius: 10px;
+}
+
+.nav-section::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 74, 173, 0.4);
+}

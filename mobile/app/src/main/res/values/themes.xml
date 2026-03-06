@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.LogPoint" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/primary_dark</item>
+        <item name="colorPrimaryVariant">@color/primary_light</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Status colors -->
+        <item name="colorError">@color/error</item>
+
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/bg_light</item>
+    </style>
+
+    <!-- FIRST: Define the base TextAppearance style (THIS IS WHAT'S MISSING) -->
+    <style name="TextAppearance.LogPoint" parent="android:TextAppearance">
+        <!-- Empty base style -->
+    </style>
+
+    <!-- THEN define the variants that inherit from it -->
+    <style name="TextAppearance.LogPoint.Dark" parent="TextAppearance.LogPoint">
+        <item name="android:textColor">@color/text_dark</item>
+    </style>
+
+    <style name="TextAppearance.LogPoint.Medium" parent="TextAppearance.LogPoint">
+        <item name="android:textColor">@color/text_medium</item>
+    </style>
+
+    <style name="TextAppearance.LogPoint.Light" parent="TextAppearance.LogPoint">
+        <item name="android:textColor">@color/text_light</item>
+    </style>
+
+    <style name="TextAppearance.LogPoint.Primary" parent="TextAppearance.LogPoint">
+        <item name="android:textColor">@color/primary_dark</item>
+    </style>
+
+    <style name="TextAppearance.LogPoint.Error" parent="TextAppearance.LogPoint">
+        <item name="android:textColor">@color/error</item>
+    </style>
+
+    <style name="TextAppearance.LogPoint.Success" parent="TextAppearance.LogPoint">
+        <item name="android:textColor">@color/success</item>
+    </style>
+
+    <!-- Background Style Utilities - Define base first if needed -->
+    <style name="Background.LogPoint" parent="android:style/Theme">
+        <!-- Empty base -->
+    </style>
+
+    <style name="Background.LogPoint.White" parent="Background.LogPoint">
+        <item name="android:background">@color/white</item>
+    </style>
+
+    <style name="Background.LogPoint.Light" parent="Background.LogPoint">
+        <item name="android:background">@color/bg_light</item>
+    </style>
+
+    <style name="Background.LogPoint.Primary" parent="Background.LogPoint">
+        <item name="android:background">@drawable/gradient_background</item>
+    </style>
+
+    <style name="Background.LogPoint.Error" parent="Background.LogPoint">
+        <item name="android:background">@color/error</item>
+    </style>
+
+    <style name="Background.LogPoint.Success" parent="Background.LogPoint">
+        <item name="android:background">@color/success</item>
+    </style>
+
+    <!-- Border Style Utilities -->
+    <style name="Border.LogPoint" parent="android:style/Theme">
+        <!-- Empty base -->
+    </style>
+
+    <style name="Border.LogPoint.Light" parent="Border.LogPoint">
+        <item name="android:background">@drawable/input_background</item>
+    </style>
+</resources>

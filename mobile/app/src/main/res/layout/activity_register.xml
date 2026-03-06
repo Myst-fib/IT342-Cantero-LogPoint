@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_background"
+    android:gravity="center"
+    android:padding="@dimen/spacing_xl">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="@dimen/button_corner_radius"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_xxxl">
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Create Account"
+                android:textSize="@dimen/text_huge"
+                android:textColor="@color/primary_dark"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/spacing_xxxl" />
+
+            <!-- First Name Label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="First Name"
+                android:textColor="@color/text_dark"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:gravity="start" />
+
+            <!-- First Name Input with Icon -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:background="@drawable/input_background"
+                android:padding="@dimen/input_padding"
+                android:focusable="false">
+
+                <ImageView
+                    android:id="@+id/iconFirstName"
+                    android:layout_width="@dimen/icon_size_lg"
+                    android:layout_height="@dimen/icon_size_lg"
+                    android:src="@drawable/ic_person"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:focusable="false" />
+
+                <EditText
+                    android:id="@+id/etFirstName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/iconFirstName"
+                    android:layout_marginStart="@dimen/input_icon_margin"
+                    android:hint="Enter your first name"
+                    android:background="@null"
+                    android:textSize="@dimen/text_sm"
+                    android:maxLines="1"
+                    android:inputType="text"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_light"
+                    android:gravity="start|center_vertical"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:cursorVisible="true"
+                    android:clickable="true" />
+            </RelativeLayout>
+
+            <!-- Last Name Label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Last Name"
+                android:textColor="@color/text_dark"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:gravity="start" />
+
+            <!-- Last Name Input with Icon -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:background="@drawable/input_background"
+                android:padding="@dimen/input_padding"
+                android:focusable="false">
+
+                <ImageView
+                    android:id="@+id/iconLastName"
+                    android:layout_width="@dimen/icon_size_lg"
+                    android:layout_height="@dimen/icon_size_lg"
+                    android:src="@drawable/ic_person"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:focusable="false" />
+
+                <EditText
+                    android:id="@+id/etLastName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/iconLastName"
+                    android:layout_marginStart="@dimen/input_icon_margin"
+                    android:hint="Enter your last name"
+                    android:background="@null"
+                    android:textSize="@dimen/text_sm"
+                    android:maxLines="1"
+                    android:inputType="text"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_light"
+                    android:gravity="start|center_vertical"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:cursorVisible="true"
+                    android:clickable="true" />
+            </RelativeLayout>
+
+            <!-- Email Label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:textColor="@color/text_dark"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:gravity="start" />
+
+            <!-- Email Input with Icon -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:background="@drawable/input_background"
+                android:padding="@dimen/input_padding"
+                android:focusable="false">
+
+                <ImageView
+                    android:id="@+id/iconEmail"
+                    android:layout_width="@dimen/icon_size_lg"
+                    android:layout_height="@dimen/icon_size_lg"
+                    android:src="@drawable/ic_email"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:focusable="false" />
+
+                <EditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/iconEmail"
+                    android:layout_marginStart="@dimen/input_icon_margin"
+                    android:hint="Enter your email"
+                    android:background="@null"
+                    android:textSize="@dimen/text_sm"
+                    android:maxLines="1"
+                    android:inputType="textEmailAddress"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_light"
+                    android:gravity="start|center_vertical"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:cursorVisible="true"
+                    android:clickable="true" />
+            </RelativeLayout>
+
+            <!-- Password Label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Password"
+                android:textColor="@color/text_dark"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:gravity="start" />
+
+            <!-- Password Input with Icon -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_xxxl"
+                android:background="@drawable/input_background"
+                android:padding="@dimen/input_padding"
+                android:focusable="false">
+
+                <ImageView
+                    android:id="@+id/iconPassword"
+                    android:layout_width="@dimen/icon_size_lg"
+                    android:layout_height="@dimen/icon_size_lg"
+                    android:src="@drawable/ic_password"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:focusable="false" />
+
+                <EditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@id/iconPassword"
+                    android:layout_marginStart="@dimen/input_icon_margin"
+                    android:hint="Enter your password"
+                    android:inputType="textPassword"
+                    android:background="@null"
+                    android:textSize="@dimen/text_sm"
+                    android:maxLines="1"
+                    android:textColor="@color/text_dark"
+                    android:textColorHint="@color/text_light"
+                    android:gravity="start|center_vertical"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:cursorVisible="true"
+                    android:clickable="true" />
+            </RelativeLayout>
+
+            <!-- Error Message -->
+            <TextView
+                android:id="@+id/tvError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/error"
+                android:textSize="@dimen/text_xs"
+                android:gravity="center"
+                android:visibility="gone"
+                android:layout_marginBottom="@dimen/spacing_sm" />
+
+            <!-- Register Button (MaterialButton) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegister"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:background="@drawable/gradient_button"
+                android:text="Register"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_md"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/spacing_xl"
+                app:cornerRadius="@dimen/button_corner_radius"
+                android:stateListAnimator="@null" />
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_marginBottom="@dimen/spacing_xl" />
+
+            <!-- Login Link -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Already have an account? "
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/text_sm"
+                    android:gravity="start" />
+
+                <TextView
+                    android:id="@+id/tvLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Login"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="@dimen/text_sm"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="start" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>

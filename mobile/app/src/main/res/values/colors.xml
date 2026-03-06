@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary_dark">#667EEA</color>
+    <color name="primary_light">#764BA2</color>
+
+    <!-- Neutral Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="text_dark">#333333</color>
+    <color name="text_medium">#555555</color>
+    <color name="text_light">#666666</color>
+
+    <!-- Border & Background Colors -->
+    <color name="border_light">#DDDDDD</color>
+    <color name="bg_light">#F5F5F5</color>
+
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="error">#F44336</color>
+    <color name="warning">#FF9800</color>
+    <color name="info">#2196F3</color>
+
+    <!-- Gradient Arrays (for programmatic use) -->
+    <array name="gradient_primary">
+        <item>#667EEA</item>
+        <item>#764BA2</item>
+    </array>
+
+    <array name="gradient_dark">
+        <item>#764BA2</item>
+        <item>#667EEA</item>
+    </array>
+</resources>
