@@ -1,4 +1,4 @@
-package com.it342.backend;
+package edu.cit.cantero.logpoint;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

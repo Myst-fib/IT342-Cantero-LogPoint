@@ -1,6 +1,6 @@
-package com.it342.backend.repository;
+package edu.cit.cantero.logpoint.repository;
 
-import com.it342.backend.entity.User;
+import edu.cit.cantero.logpoint.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

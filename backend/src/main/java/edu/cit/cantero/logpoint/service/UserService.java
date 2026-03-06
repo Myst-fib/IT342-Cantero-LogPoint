@@ -1,7 +1,7 @@
-package com.it342.backend.service;
+package edu.cit.cantero.logpoint.service;
 
-import com.it342.backend.entity.User;
-import com.it342.backend.repository.UserRepository;
+import edu.cit.cantero.logpoint.entity.User;
+import edu.cit.cantero.logpoint.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

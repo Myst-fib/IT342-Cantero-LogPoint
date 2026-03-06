@@ -1,6 +1,6 @@
-package com.it342.backend.controller;
+package edu.cit.cantero.logpoint.controller;
 
-import com.it342.backend.entity.User;
+import edu.cit.cantero.logpoint.entity.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,4 +1,4 @@
-package com.it342.backend.entity;
+package edu.cit.cantero.logpoint.entity;
 
 import jakarta.persistence.*;
 

@@ -1,4 +1,4 @@
-package com.it342.backend.dto;
+package edu.cit.cantero.logpoint.dto;
 
 public class LoginRequest {
     public String username; // email
