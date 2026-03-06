@@ -1,122 +1,122 @@
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: var(--gradient-primary);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: var(--gradient-primary);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-.login-box {
-  background: var(--white);
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 400px;
-}
+  .login-box {
+    background: var(--white);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+  }
 
-.login-box h2 {
-  text-align: center;
-  color: var(--primary-light);
-  margin-bottom: 35px;
-  margin-top: -2px;
-  font-size: 34px;
-  font-weight: 600;
-}
+  .login-box h2 {
+    text-align: center;
+    color: var(--primary-light);
+    margin-bottom: 35px;
+    margin-top: -2px;
+    font-size: 34px;
+    font-weight: 600;
+  }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-}
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
 
-.form-group label {
-  margin-bottom: 8px;
-  color: var(--text-dark);
-  font-weight: 500;
-  font-size: 14px;
-}
+  .form-group label {
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-weight: 500;
+    font-size: 14px;
+  }
 
-.input-with-icon {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
 
-.input-icon {
-  position: absolute;
-  left: 12px;
-  width: 18px;
-  height: 18px;
-  opacity: 0.6;
-}
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    width: 18px;
+    height: 18px;
+    opacity: 0.6;
+  }
 
-.input-with-icon input {
-  width: 100%;
-  padding: 12px 12px 12px 40px; /* space for icon */
-  border: 1px solid var(--border-light);
-  border-radius: 5px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
-  text-indent: 30px;
-}
+  .input-with-icon input {
+    width: 100%;
+    padding: 12px 12px 12px 40px; /* space for icon */
+    border: 1px solid var(--border-light);
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    text-indent: 30px;
+  }
 
-.form-group input {
-  padding: 12px;
-  border: 1px solid var(--border-light);
-  border-radius: 5px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
-}
+  .form-group input {
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+  }
 
-.form-group input:focus {
-  outline: none;
-  border-color: var(--primary-light);
-  box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
-}
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+  }
 
-.submit-btn {
-  width: 100%;
-  padding: 12px;
-  background: var(--gradient-primary);
-  color: var(--white);
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+  .submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--gradient-primary);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
 
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  }
 
-.submit-btn:active {
-  transform: translateY(0);
-}
+  .submit-btn:active {
+    transform: translateY(0);
+  }
 
-.signup-link {
-  text-align: center;
-  margin-top: 20px;
-  color: var(--text-light);
-  font-size: 14px;
-}
+  .signup-link {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-light);
+    font-size: 14px;
+  }
 
-.signup-link p {
-  margin: 0;
-}
+  .signup-link p {
+    margin: 0;
+  }
 
-.clickable-link {
-  color: var(--primary-dark);
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
+  .clickable-link {
+    color: var(--primary-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
 
-.clickable-link:hover {
-  color: var(--primary-light);
-  text-decoration: underline;
-}
+  .clickable-link:hover {
+    color: var(--primary-light);
+    text-decoration: underline;
+  }
