@@ -1,4 +1,3 @@
-// NavBar.js
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import '../../styles/NavBar.css';
@@ -11,7 +10,6 @@ function NavBar() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // First try to get user from localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
@@ -20,10 +18,10 @@ function NavBar() {
         setLoading(false);
       } catch (e) {
         console.error('Error parsing stored user:', e);
-        fetchUserData(); // Fallback to API
+        fetchUserData();
       }
     } else {
-      fetchUserData(); // No stored user, try API
+      fetchUserData();
     }
   }, []);
 
@@ -36,15 +34,12 @@ function NavBar() {
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
-        // Update localStorage with fresh data
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
-        // Not authenticated, but don't redirect immediately
-        // Let the user stay on the page if they're just browsing
         console.log('Not authenticated');
       }
     } catch (error) {
@@ -53,6 +48,8 @@ function NavBar() {
       setLoading(false);
     }
   };
+
+  const isAdmin = user?.role?.toLowerCase() === 'office administrators';
 
   const requestLogout = () => setShowBanner(true);
 
@@ -65,7 +62,6 @@ function NavBar() {
     } catch (e) {
       // ignore
     } finally {
-      // Clear localStorage
       localStorage.removeItem('user');
       localStorage.removeItem('isLoggedIn');
       setShowBanner(false);
@@ -76,12 +72,11 @@ function NavBar() {
   const cancelLogout = () => setShowBanner(false);
 
   const goToDashboard = () => {
-    navigate('/dashboard');
+    if (isAdmin) navigate('/dashboard');
+    else navigate('/add-visitor');
   };
 
-  const goToProfile = () => {
-    navigate('/profile');
-  };
+  const goToProfile = () => navigate('/profile');
 
   if (loading) {
     return (
@@ -91,10 +86,8 @@ function NavBar() {
         </div>
         <nav className="nav-section">
           <div className="nav-label">Main</div>
-          {/* Add your nav items here with skeleton loading */}
-          <NavLink to="/dashboard" className="nav-item">Dashboard</NavLink>
-          <NavLink to="/records" className="nav-item">Visitor Log</NavLink>
           <NavLink to="/add-visitor" className="nav-item">Add Visitor</NavLink>
+          <NavLink to="/records" className="nav-item">Visitor Log</NavLink>
         </nav>
         <div className="sidebar-footer">
           <div className="user-chip">
@@ -115,22 +108,26 @@ function NavBar() {
 
         <nav className="nav-section">
           <div className="nav-label">Main</div>
-          
-          <NavLink 
-            to="/dashboard" 
-            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-          >
-            <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            Dashboard
-          </NavLink>
 
-          <NavLink 
-            to="/records" 
+          {/* Dashboard — admin only */}
+          {isAdmin && (
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+            >
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              Dashboard
+            </NavLink>
+          )}
+
+          {/* Visitor Log — all roles */}
+          <NavLink
+            to="/records"
             className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
           >
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -142,8 +139,9 @@ function NavBar() {
             Visitor Log
           </NavLink>
 
-          <NavLink 
-            to="/add-visitor" 
+          {/* Add Visitor — all roles */}
+          <NavLink
+            to="/add-visitor"
             className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
           >
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -155,9 +153,10 @@ function NavBar() {
           </NavLink>
 
           <div className="nav-label" style={{ marginTop: '16px' }}>Account</div>
-          
-          <NavLink 
-            to="/profile" 
+
+          {/* Profile — all roles */}
+          <NavLink
+            to="/profile"
             className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
           >
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -171,9 +170,7 @@ function NavBar() {
         <div className="sidebar-footer">
           <div className="user-chip" onClick={goToProfile} style={{ cursor: 'pointer' }}>
             <div className="avatar">
-              {user ? (
-                user.firstName?.charAt(0)?.toUpperCase() || 'U'
-              ) : 'U'}
+              {user ? (user.firstName?.charAt(0)?.toUpperCase() || 'U') : 'U'}
             </div>
             <div>
               <div className="user-name">

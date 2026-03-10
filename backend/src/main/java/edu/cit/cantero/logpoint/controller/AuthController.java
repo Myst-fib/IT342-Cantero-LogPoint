@@ -2,6 +2,7 @@ package edu.cit.cantero.logpoint.controller;
 
 import edu.cit.cantero.logpoint.dto.LoginRequest;
 import edu.cit.cantero.logpoint.dto.RegisterRequest;
+import edu.cit.cantero.logpoint.dto.UserDTO;
 import edu.cit.cantero.logpoint.entity.User;
 import edu.cit.cantero.logpoint.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -46,8 +47,12 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
 
-        session.setAttribute("user", userOpt.get());
-        return ResponseEntity.ok(userOpt.get());
+        User user = userOpt.get();
+        UserDTO userDTO = new UserDTO(user);
+        
+        // Store the DTO in session instead of the entity
+        session.setAttribute("user", userDTO);
+        return ResponseEntity.ok(userDTO);
     }
 
     @PostMapping("/logout")

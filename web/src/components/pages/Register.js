@@ -20,7 +20,6 @@ function Register() {
     password: '',
     confirmPassword: '',
     role: '',
-    customRole: '',
   });
   const [passwordError, setPasswordError] = useState('');
   const [notification, setNotification] = useState({ 
@@ -242,7 +241,7 @@ function Register() {
           lastName: formData.lastName.trim(),
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
-          role: formData.role === 'Others' ? formData.customRole.trim() : formData.role,
+          role: formData.role,
         }),
       });
 
@@ -277,7 +276,6 @@ function Register() {
         password: '',
         confirmPassword: '',
         role: '',
-        customRole: '',
       });
       
       setTimeout(() => {
@@ -394,32 +392,12 @@ function Register() {
                 className={`role-select ${notification.field === 'role' ? 'error-highlight' : ''}`}
                 required
               >
-                <option value="">Select your role</option>
+                <option value="" disabled>Select Role</option> {/* <-- placeholder */}
                 <option value="Office Administrators">Office Administrators</option>
                 <option value="Security Guards">Security Guards</option>
-                <option value="Others">Others (please specify)</option>
               </select>
             </div>
           </div>
-
-          {formData.role === 'Others' && (
-            <div className="form-group">
-              <label htmlFor="customRole">Specify Your Role</label>
-              <div className={getFieldClassName('customRole')}>
-                <AddModeratorRoundedIcon className="input-icon" />
-                <input
-                  type="text"
-                  id="customRole"
-                  name="customRole"
-                  value={formData.customRole}
-                  onChange={handleChange}
-                  placeholder="e.g., Manager, Supervisor"
-                  required
-                  className={notification.field === 'customRole' ? 'error-highlight' : ''}
-                />
-              </div>
-            </div>
-          )}
 
           {/* First Name and Last Name - now after email and role */}
           <div className="form-row">

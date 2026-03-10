@@ -1,0 +1,428 @@
+/* AddVisitor.css - Updated grid styles */
+
+/* ===== MAIN CONTAINER ===== */
+.add-visitor-wrapper {
+  margin-left: var(--sidebar-w, 240px);
+  min-height: 100vh;
+  background: var(--bg-light);
+}
+
+.add-visitor-container {
+  padding: 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.page-subtitle {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ===== CARD STYLES ===== */
+.card {
+  background: var(--white);
+  border-radius: var(--radius, 12px);
+  box-shadow: var(--shadow, 0 2px 16px rgba(0, 74, 173, 0.08));
+  margin-bottom: 24px;
+  border: 1px solid rgba(0, 74, 173, 0.06);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.card-body {
+  padding: 24px;
+}
+
+/* ===== FORM GRID ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 20px; /* Increased row gap for better separation */
+}
+
+.form-group {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+/* Ensure all form inputs take full width of their container */
+.form-group .form-input {
+  width: 100%;
+}
+
+/* ===== FORM LABELS ===== */
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-medium);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.required {
+  color: var(--error);
+}
+
+.optional {
+  color: var(--text-light);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+/* ===== FORM INPUTS ===== */
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-light);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-dark);
+  transition: all 0.2s ease;
+  outline: none;
+  background-color: var(--white);
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+.form-input:focus {
+  border-color: var(--primary-dark);
+  box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.12);
+}
+
+.form-input:hover {
+  border-color: var(--primary-light);
+}
+
+.form-input.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-input::placeholder {
+  color: var(--text-light);
+  opacity: 0.6;
+}
+
+/* Select dropdown styling */
+select.form-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* Other Purpose field animation */
+.form-group:has(input[name="otherPurpose"]) {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 24px; /* Increased top margin */
+}
+
+.btn-cancel {
+  padding: 11px 24px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-light);
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-medium);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-cancel:hover {
+  border-color: var(--text-medium);
+  color: var(--text-dark);
+  background: var(--bg-light);
+}
+
+.btn-save {
+  padding: 11px 28px;
+  border-radius: 8px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 74, 173, 0.2);
+}
+
+.btn-save:hover {
+  background: var(--gradient-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 74, 173, 0.25);
+}
+
+.btn-save:active {
+  transform: translateY(0);
+}
+
+/* ===== TIPS CARD ===== */
+.tips-card {
+  background: var(--white);
+  border-radius: var(--radius, 12px);
+  padding: 16px 20px;
+  border-left: 4px solid var(--primary-dark);
+  box-shadow: var(--shadow, 0 2px 16px rgba(0, 74, 173, 0.08));
+  margin-top: 16px;
+}
+
+.tips-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tips-icon {
+  font-size: 18px;
+}
+
+.tips-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tips-list li {
+  font-size: 13px;
+  color: var(--text-medium);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tips-list li:before {
+  content: "•";
+  color: var(--primary-light);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .add-visitor-wrapper {
+    margin-left: 0;
+  }
+  
+  .add-visitor-container {
+    padding: 16px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .btn-cancel, .btn-save {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .card-body {
+    padding: 16px;
+  }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 74, 173, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 74, 173, 0.5);
+}
+/* Time input styling */
+.time-input {
+  background-color: var(--bg-light);
+  cursor: default;
+}
+
+.time-input:focus {
+  border-color: var(--border-light);
+  box-shadow: none;
+}
+
+.time-note {
+  display: block;
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Date display in card header */
+.date-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-light);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary-dark);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 2px 8px rgba(0, 74, 173, 0.05);
+}
+
+.date-icon {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+.date-text {
+  letter-spacing: 0.3px;
+}
+
+/* Time input styling */
+.time-input {
+  background-color: var(--bg-light);
+  cursor: default;
+}
+
+.time-input:focus {
+  border-color: var(--border-light);
+  box-shadow: none;
+}
+
+.time-note {
+  display: block;
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Responsive adjustment for mobile */
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .date-display {
+    align-self: flex-start;
+  }
+}
+
+/* ===== INPUT WITH ICON ===== */
+.input-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-field-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--primary-dark);
+  opacity: 0.5;
+  font-size: 18px !important;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.input-icon-wrapper:focus-within .input-field-icon {
+  opacity: 0.9;
+}
+
+.form-input.with-icon {
+  padding-left: 40px;
+}

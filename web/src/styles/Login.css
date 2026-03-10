@@ -1,82 +1,110 @@
-  .login-container {
+.login-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     background: var(--gradient-primary);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
+}
 
-  .login-box {
+.login-box {
     background: var(--white);
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 400px;
-  }
+}
 
-  .login-box h2 {
+.login-box h2 {
     text-align: center;
     color: var(--primary-light);
     margin-bottom: 35px;
     margin-top: -2px;
     font-size: 34px;
     font-weight: 600;
-  }
+}
 
-  .form-group {
+/* Force margin-bottom on ALL form groups */
+.login-box form .form-group {
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
-  }
+    margin-bottom: 18px !important; /* Increased from 20px to 30px for better spacing */
+}
 
-  .form-group label {
+/* Style for the last form group to potentially have less margin if needed */
+.login-box form .form-group:last-of-type {
+    margin-bottom: 20px !important; /* Slightly less margin before the button */
+}
+
+.form-group label {
     margin-bottom: 8px;
     color: var(--text-dark);
     font-weight: 500;
     font-size: 14px;
-  }
+}
 
-  .input-with-icon {
+.input-with-icon {
     position: relative;
     display: flex;
     align-items: center;
-  }
+}
 
-  .input-icon {
+.input-icon {
     position: absolute;
     left: 12px;
     width: 18px;
     height: 18px;
     opacity: 0.6;
-  }
+    color: #bbb;
+    z-index: 1;
+}
 
-  .input-with-icon input {
+.input-with-icon input {
     width: 100%;
     padding: 12px 12px 12px 40px; /* space for icon */
     border: 1px solid var(--border-light);
     border-radius: 5px;
     font-size: 14px;
     transition: border-color 0.3s ease;
-    text-indent: 30px;
-  }
-
-  .form-group input {
-    padding: 12px;
-    border: 1px solid var(--border-light);
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
-  }
-
-  .form-group input:focus {
+    /* Remove text-indent: 30px; as it conflicts with padding */
+}
+.form-group input:focus {
     outline: none;
     border-color: var(--primary-light);
     box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
-  }
+}
 
-  .submit-btn {
+/* Error state for inputs */
+.error-highlight {
+    border-color: var(--error) !important;
+    background-color: rgba(229, 57, 53, 0.02) !important;
+}
+
+.error-highlight:focus {
+    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1) !important;
+}
+
+.field-error .input-icon {
+    color: var(--error);
+}
+
+/* Error message styling */
+.error-message {
+    margin-top: 5px;
+    color: var(--error);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.error-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.submit-btn {
     width: 100%;
     padding: 12px;
     background: var(--gradient-primary);
@@ -87,36 +115,112 @@
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
+    margin-top: 10px; /* Add some top margin */
+}
 
-  .submit-btn:hover {
+.submit-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-  }
+}
 
-  .submit-btn:active {
+.submit-btn:active {
     transform: translateY(0);
-  }
+}
 
-  .signup-link {
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #718096, #a0aec0);
+}
+
+.submit-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.signup-link {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 25px; /* Increased from 20px */
     color: var(--text-light);
     font-size: 14px;
-  }
+}
 
-  .signup-link p {
+.signup-link p {
     margin: 0;
-  }
+    padding: 10px;
+}
 
-  .clickable-link {
+.clickable-link {
     color: var(--primary-dark);
     font-weight: 600;
     cursor: pointer;
     transition: color 0.3s ease;
-  }
+}
 
-  .clickable-link:hover {
+.clickable-link:hover {
     color: var(--primary-light);
     text-decoration: underline;
-  }
+}
+
+/* Loading state */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--white);
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .login-box {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
+
+    .login-box h2 {
+        font-size: 28px;
+        margin-bottom: 25px;
+    }
+
+    .login-box form .form-group {
+        margin-bottom: 25px !important; /* Slightly smaller on mobile */
+    }
+
+    .login-box form .form-group:last-of-type {
+        margin-bottom: 20px !important;
+    }
+
+    .submit-btn {
+        padding: 14px; /* Slightly larger touch target on mobile */
+        font-size: 16px;
+    }
+
+    .signup-link {
+        margin-top: 20px;
+        font-size: 13px;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 380px) {
+    .login-box {
+        padding: 25px 15px;
+    }
+
+    .login-box h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .login-box form .form-group {
+        margin-bottom: 20px !important;
+    }
+}

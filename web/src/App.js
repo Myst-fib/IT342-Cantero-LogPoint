@@ -5,12 +5,14 @@ import Login from './components/pages/Login';
 import Dashboard from './components/pages/Dashboard';
 import Profile from './components/pages/Profile';
 import NavBar from './components/common/NavBar';
+import AddVisitor from './components/features/AddVisitor';
+import ProtectedRoute from './components/common/ProtectedRoute'; // ← ADD THIS
+
 
 function AppLayout() {
   const location = useLocation();
-  
-  // Show navbar on authenticated routes (dashboard, profile, etc.)
-  const authenticatedRoutes = ['/dashboard', '/profile', '/borrow'];
+
+  const authenticatedRoutes = ['/dashboard', '/profile', '/add-visitor', '/records'];
   const showNavBar = authenticatedRoutes.some(route => location.pathname.startsWith(route));
 
   return (
@@ -20,8 +22,34 @@ function AppLayout() {
         <Route path="/" element={<Navigate to="/register" />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
+
+        {/* Admin only */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requiredRole="office administrators">
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Any authenticated user */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-visitor"
+          element={
+            <ProtectedRoute>
+              <AddVisitor />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

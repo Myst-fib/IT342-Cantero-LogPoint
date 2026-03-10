@@ -406,3 +406,97 @@
     font-size: 13px;
   }
 }
+
+/* Force margin-bottom on ALL form groups */
+.register-box form .form-group {
+  margin-bottom: 18px !important; /* Using !important to ensure it overrides any other styles */
+}
+
+.register-box form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 0; 
+}
+
+/* Ensure individual inputs in a row still have margin-bottom */
+.register-box form .form-row .form-group {
+  margin-bottom: 0 !important; 
+}
+
+/* Add margin after the entire row instead */
+.register-box form .form-row {
+  margin-bottom: 30px !important;
+}
+
+.register-box form .password-errors {
+  margin-top: 5px;
+  margin-bottom: 30px !important; /* Add margin after password errors */
+  padding: 10px;
+  background-color: #ffe6e6;
+  border-radius: 5px;
+  border-left: 3px solid var(--error);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Ensure the submit button has proper spacing from the last element */
+.register-box form .submit-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .register-box {
+    padding: 30px 20px;
+    max-width: 100%;
+  }
+
+  .register-box h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+  }
+
+  .register-box form .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-bottom: 0 !important;
+  }
+  
+  /* On mobile, each input in the row needs its own margin */
+  .register-box form .form-row .form-group {
+    margin-bottom: 30px !important;
+  }
+  
+  /* Remove margin from the last input in the row on mobile */
+  .register-box form .form-row .form-group:last-child {
+    margin-bottom: 30px !important; /* Keep margin for consistency */
+  }
+  
+  .notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .notification-title {
+    font-size: 15px;
+  }
+  
+  .notification-message {
+    font-size: 13px;
+  }
+}

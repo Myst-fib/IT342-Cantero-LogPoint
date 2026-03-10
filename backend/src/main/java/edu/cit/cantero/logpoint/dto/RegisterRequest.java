@@ -5,5 +5,5 @@ public class RegisterRequest {
     public String lastName;
     public String email;
     public String password;
-    public String role; // role sent from frontend (can be custom)
+    public String role;
 }

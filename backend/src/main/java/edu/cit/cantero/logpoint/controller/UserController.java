@@ -1,6 +1,6 @@
 package edu.cit.cantero.logpoint.controller;
 
-import edu.cit.cantero.logpoint.entity.User;
+import edu.cit.cantero.logpoint.dto.UserDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +11,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        UserDTO user = (UserDTO) session.getAttribute("user");
 
         if (user == null) {
             return ResponseEntity.status(401).body("Not authenticated");
