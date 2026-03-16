@@ -224,3 +224,119 @@
         margin-bottom: 20px !important;
     }
 }
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.divider span {
+  padding: 0 10px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+/* Google Button */
+.google-btn {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  color: var(--text-dark);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.google-btn:hover {
+  background: #f8f9fa;
+  border-color: #dadce0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.google-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Social login section */
+.social-login {
+  margin-top: 20px;
+}
+/* Add these styles for the password toggle button */
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  width: 100%;
+  padding: 12px 12px 12px 40px; /* space for left icon */
+  padding-right: 45px !important; /* space for right eye icon */
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.password-toggle {
+  position: absolute !important;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  padding: 4px !important;
+  color: #888 !important;
+  background: transparent !important;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: var(--primary-light) !important;
+  background: transparent !important;
+}
+
+.password-toggle:focus {
+  outline: none;
+}
+
+.password-toggle svg {
+  font-size: 20px;
+}
+
+/* Ensure the input doesn't overlap with the toggle button */
+.password-field input {
+  padding-right: 45px !important;
+}
+
+/* Style for when input is disabled */
+.password-toggle.Mui-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

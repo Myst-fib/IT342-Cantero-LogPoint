@@ -6,7 +6,10 @@ import Dashboard from './components/pages/Dashboard';
 import Profile from './components/pages/Profile';
 import NavBar from './components/common/NavBar';
 import AddVisitor from './components/features/AddVisitor';
-import ProtectedRoute from './components/common/ProtectedRoute'; // ← ADD THIS
+import ProtectedRoute from './components/common/ProtectedRoute';
+import OAuth2Redirect from './components/google/OAuth2Redirect';
+
+
 
 
 function AppLayout() {
@@ -22,6 +25,7 @@ function AppLayout() {
         <Route path="/" element={<Navigate to="/register" />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
 
         {/* Admin only */}
         <Route
@@ -50,6 +54,8 @@ function AppLayout() {
             </ProtectedRoute>
           }
         />
+        
+
       </Routes>
     </>
   );

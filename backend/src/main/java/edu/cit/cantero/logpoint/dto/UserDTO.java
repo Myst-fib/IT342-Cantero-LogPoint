@@ -9,8 +9,9 @@ public class UserDTO {
     private String email;
     private String role;
     private String status;
+    private String authProvider;
+    private String pictureUrl;
 
-    // Constructor that takes a User entity
     public UserDTO(User user) {
         this.id = user.getId();
         this.firstName = user.getFirstName();
@@ -18,10 +19,9 @@ public class UserDTO {
         this.email = user.getEmail();
         this.role = user.getRole();
         this.status = user.getStatus();
+        this.authProvider = user.getAuthProvider();
+        this.pictureUrl = user.getPictureUrl();
     }
-
-    // Default constructor (optional, but good to have)
-    public UserDTO() {}
 
     // Getters and setters
     public Long getId() { return id; }
@@ -41,4 +41,10 @@ public class UserDTO {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getAuthProvider() { return authProvider; }
+    public void setAuthProvider(String authProvider) { this.authProvider = authProvider; }
+
+    public String getPictureUrl() { return pictureUrl; }
+    public void setPictureUrl(String pictureUrl) { this.pictureUrl = pictureUrl; }
 }
