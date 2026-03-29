@@ -33,7 +33,7 @@ public class AuthController {
         user.setFirstName(req.firstName);
         user.setLastName(req.lastName);
         user.setEmail(req.email);
-        user.setPassword(passwordEncoder.encode(req.password)); 
+        user.setPassword(req.password); // ← pass raw password, let service handle it
         user.setAuthProvider("LOCAL");
         
         if (req.role != null && !req.role.isBlank()) {

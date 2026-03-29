@@ -1,4 +1,4 @@
-// AddVisitor.js
+// AddVisitor.js - Add these states and functions
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/AddVisitor.css';
@@ -25,6 +25,28 @@ function AddVisitor() {
   });
 
   const [currentDate, setCurrentDate] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [banner, setBanner] = useState({ show: false, message: '', type: 'success' });
+
+  const showBanner = (message, type = 'success') => {
+    setBanner({ show: true, message, type });
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+      hideBanner();
+    }, 3000);
+  };
+
+  const hideBanner = () => {
+    const bannerElement = document.querySelector('.banner-notification');
+    if (bannerElement) {
+      bannerElement.classList.add('fade-out');
+      setTimeout(() => {
+        setBanner({ show: false, message: '', type: 'success' });
+      }, 300);
+    } else {
+      setBanner({ show: false, message: '', type: 'success' });
+    }
+  };
 
   const getPhilippineTime = () => {
     const now = new Date();
@@ -63,47 +85,103 @@ function AddVisitor() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    if (!formData.visitorName) { alert('Please enter visitor name'); return; }
-    if (!formData.purpose) { alert('Please select a purpose of visit'); return; }
-    if (formData.purpose === 'Other' && !formData.otherPurpose.trim()) { alert('Please specify the purpose of visit'); return; }
-    if (!formData.host) { alert('Please enter the host name'); return; }
-    if (!formData.department) { alert('Please select a department'); return; }
-    if (formData.department === 'Other' && !formData.otherDepartment.trim()) { alert('Please specify the department'); return; }
-    if (!formData.contactNumber || formData.contactNumber === '+63 9') { alert('Please enter a complete contact number'); return; }
+    // Validation
+    if (!formData.visitorName) { 
+      showBanner('Please enter visitor name', 'error');
+      setLoading(false);
+      return; 
+    }
+    if (!formData.purpose) { 
+      showBanner('Please select a purpose of visit', 'error');
+      setLoading(false);
+      return; 
+    }
+    if (formData.purpose === 'Other' && !formData.otherPurpose.trim()) { 
+      showBanner('Please specify the purpose of visit', 'error');
+      setLoading(false);
+      return; 
+    }
+    if (!formData.host) { 
+      showBanner('Please enter the host name', 'error');
+      setLoading(false);
+      return; 
+    }
+    if (!formData.department) { 
+      showBanner('Please select a department', 'error');
+      setLoading(false);
+      return; 
+    }
+    if (formData.department === 'Other' && !formData.otherDepartment.trim()) { 
+      showBanner('Please specify the department', 'error');
+      setLoading(false);
+      return; 
+    }
+    if (!formData.contactNumber || formData.contactNumber === '+63 9') { 
+      showBanner('Please enter a complete contact number', 'error');
+      setLoading(false);
+      return; 
+    }
 
+    // Prepare data for backend
     const submissionData = {
-      ...formData,
+      visitorName: formData.visitorName,
       purpose: formData.purpose === 'Other' ? formData.otherPurpose : formData.purpose,
+      host: formData.host,
       department: formData.department === 'Other' ? formData.otherDepartment : formData.department,
-      visitDate: currentDate
+      contactNo: formData.contactNumber
     };
 
     try {
       const response = await fetch('http://localhost:8080/api/visitors', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json'
+        },
         credentials: 'include',
         body: JSON.stringify(submissionData)
       });
 
       if (response.ok) {
-        alert('Visitor added successfully!');
-        navigate('/records');
+        // Option 1: Use savedData if you need it
+        const savedData = await response.json();
+        console.log('Saved visitor:', savedData); // This uses savedData
+        showBanner('✓ Visitor checked in successfully!', 'success');
+        setTimeout(() => {
+          navigate('/records');
+        }, 1500);
       } else {
         const error = await response.text();
-        alert(error || 'Failed to add visitor');
+        showBanner(error || 'Failed to add visitor', 'error');
       }
     } catch (error) {
       console.error('Error adding visitor:', error);
-      alert('Server error. Please try again.');
+      showBanner('Server error. Please try again.', 'error');
+    } finally {
+      setLoading(false);
     }
   };
-
   const handleCancel = () => navigate('/records');
 
   return (
     <div className="add-visitor-wrapper">
+      {/* Banner Notification */}
+      {banner.show && (
+        <div className={`banner-notification ${banner.type}`}>
+          <div className="banner-content">
+            <span className="banner-icon">
+              {banner.type === 'success' && '✓'}
+              {banner.type === 'error' && '✗'}
+              {banner.type === 'warning' && '⚠'}
+              {banner.type === 'info' && 'ℹ'}
+            </span>
+            <span className="banner-message">{banner.message}</span>
+            <button className="banner-close" onClick={hideBanner}>×</button>
+          </div>
+        </div>
+      )}
+
       <div className="add-visitor-container">
         <div className="page-header">
           <div>
@@ -169,8 +247,8 @@ function AddVisitor() {
                   </div>
                 </div>
 
-                {/* Other Purpose or Host */}
-                {formData.purpose === 'Other' ? (
+                {/* Specify Purpose if Other */}
+                {formData.purpose === 'Other' && (
                   <div className="form-group">
                     <label className="form-label">
                       Specify Purpose <span className="required">*</span>
@@ -188,46 +266,26 @@ function AddVisitor() {
                       />
                     </div>
                   </div>
-                ) : (
-                  <div className="form-group">
-                    <label className="form-label">
-                      Host <span className="required">*</span>
-                    </label>
-                    <div className="input-icon-wrapper">
-                      <BadgeOutlinedIcon className="input-field-icon" />
-                      <input
-                        type="text"
-                        name="host"
-                        value={formData.host}
-                        onChange={handleChange}
-                        className="form-input with-icon"
-                        placeholder="Who are they visiting?"
-                        required
-                      />
-                    </div>
-                  </div>
                 )}
 
-                {/* Host field when purpose is Other (so it doesn't disappear) */}
-                {formData.purpose === 'Other' && (
-                  <div className="form-group">
-                    <label className="form-label">
-                      Host <span className="required">*</span>
-                    </label>
-                    <div className="input-icon-wrapper">
-                      <BadgeOutlinedIcon className="input-field-icon" />
-                      <input
-                        type="text"
-                        name="host"
-                        value={formData.host}
-                        onChange={handleChange}
-                        className="form-input with-icon"
-                        placeholder="Who are they visiting?"
-                        required
-                      />
-                    </div>
+                {/* Host */}
+                <div className="form-group">
+                  <label className="form-label">
+                    Host <span className="required">*</span>
+                  </label>
+                  <div className="input-icon-wrapper">
+                    <BadgeOutlinedIcon className="input-field-icon" />
+                    <input
+                      type="text"
+                      name="host"
+                      value={formData.host}
+                      onChange={handleChange}
+                      className="form-input with-icon"
+                      placeholder="Who are they visiting?"
+                      required
+                    />
                   </div>
-                )}
+                </div>
 
                 {/* Department */}
                 <div className="form-group">
@@ -255,7 +313,7 @@ function AddVisitor() {
                   </div>
                 </div>
 
-                {/* Other Department */}
+                {/* Specify Department if Other */}
                 {formData.department === 'Other' && (
                   <div className="form-group">
                     <label className="form-label">
@@ -306,9 +364,7 @@ function AddVisitor() {
                       type="time"
                       name="timeIn"
                       value={formData.timeIn}
-                      onChange={handleChange}
                       className="form-input with-icon time-input"
-                      required
                       readOnly
                     />
                   </div>
@@ -318,8 +374,12 @@ function AddVisitor() {
               </div>
 
               <div className="form-actions">
-                <button type="button" className="btn-cancel" onClick={handleCancel}>Cancel</button>
-                <button type="submit" className="btn-save">Save Entry</button>
+                <button type="button" className="btn-cancel" onClick={handleCancel}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-save" disabled={loading}>
+                  {loading ? 'Saving...' : 'Save Entry'}
+                </button>
               </div>
             </form>
           </div>
