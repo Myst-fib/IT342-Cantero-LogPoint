@@ -149,7 +149,7 @@ function AddVisitor() {
         console.log('Saved visitor:', savedData); // This uses savedData
         showBanner('✓ Visitor checked in successfully!', 'success');
         setTimeout(() => {
-          navigate('/records');
+          navigate('/visitor-log');
         }, 1500);
       } else {
         const error = await response.text();

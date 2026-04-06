@@ -6,16 +6,14 @@ import Dashboard from './components/pages/Dashboard';
 import Profile from './components/pages/Profile';
 import NavBar from './components/common/NavBar';
 import AddVisitor from './components/features/AddVisitor';
+import VisitorLog from './components/features/VisitorLog';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import OAuth2Redirect from './components/google/OAuth2Redirect';
-
-
-
 
 function AppLayout() {
   const location = useLocation();
 
-  const authenticatedRoutes = ['/dashboard', '/profile', '/add-visitor', '/records'];
+  const authenticatedRoutes = ['/dashboard', '/profile', '/add-visitor', '/visitor-log'];
   const showNavBar = authenticatedRoutes.some(route => location.pathname.startsWith(route));
 
   return (
@@ -54,8 +52,14 @@ function AppLayout() {
             </ProtectedRoute>
           }
         />
-        
-
+        <Route
+          path="/visitor-log"
+          element={
+            <ProtectedRoute>
+              <VisitorLog />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

@@ -20,7 +20,7 @@ public class VisitLog {
     private Purpose purpose;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
+    @JoinColumn(name = "created_by", nullable = true)
     private User createdBy;
 
     @Column(name = "time_in", nullable = false)

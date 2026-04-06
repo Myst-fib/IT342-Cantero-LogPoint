@@ -33,9 +33,9 @@ public class VisitLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<VisitLogDTO>> getAllVisitLogs(Authentication authentication) {
-        String email = authentication.getName();
-        List<VisitLogDTO> visitLogs = visitLogService.getVisitLogsByUser(email);
+    public ResponseEntity<List<VisitLogDTO>> getAllVisitLogs() {
+        // No Authentication parameter — service already returns all logs
+        List<VisitLogDTO> visitLogs = visitLogService.getAllVisitLogs();
         return ResponseEntity.ok(visitLogs);
     }
 

@@ -69,10 +69,7 @@ public class VisitLogService {
     }
 
     public List<VisitLogDTO> getVisitLogsByUser(String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return visitLogRepository.findByCreatedBy_Id(user.getId())
+        return visitLogRepository.findAll()
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -114,7 +111,7 @@ public class VisitLogService {
         VisitLogDTO dto = new VisitLogDTO();
         dto.setId(visitLog.getId());
         dto.setVisitorId(visitLog.getVisitor().getId());
-        dto.setVisitorName(visitLog.getVisitor().getFullName()); // Now this works
+        dto.setVisitorName(visitLog.getVisitor().getVisitorName());
         dto.setPurposeId(visitLog.getPurpose().getId());
         dto.setPurposeName(visitLog.getPurpose().getName());
         dto.setTimeIn(visitLog.getTimeIn());
@@ -123,17 +120,23 @@ public class VisitLogService {
         dto.setHostName(visitLog.getHostName());
         dto.setNotes(visitLog.getNotes());
         dto.setQrCode(visitLog.getQrCode());
-        dto.setCreatedById(visitLog.getCreatedBy().getId());
-        
-        // Fix: Check if first name and last name exist, otherwise use email
-        String createdByName;
-        if (visitLog.getCreatedBy().getFirstName() != null && visitLog.getCreatedBy().getLastName() != null) {
-            createdByName = visitLog.getCreatedBy().getFirstName() + " " + visitLog.getCreatedBy().getLastName();
-        } else {
-            createdByName = visitLog.getCreatedBy().getEmail();
+
+        // Null-safe createdBy
+        if (visitLog.getCreatedBy() != null) {
+            dto.setCreatedById(visitLog.getCreatedBy().getId());
+            if (visitLog.getCreatedBy().getFirstName() != null && visitLog.getCreatedBy().getLastName() != null) {
+                dto.setCreatedByName(visitLog.getCreatedBy().getFirstName() + " " + visitLog.getCreatedBy().getLastName());
+            } else {
+                dto.setCreatedByName(visitLog.getCreatedBy().getEmail());
+            }
         }
-        dto.setCreatedByName(createdByName);
-        
+
         return dto;
     }
+    public List<VisitLogDTO> getAllVisitLogs() {
+        return visitLogRepository.findAll()
+            .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    } 
 }

@@ -127,7 +127,7 @@ function NavBar() {
 
           {/* Visitor Log — all roles */}
           <NavLink
-            to="/records"
+            to="/visitor-log"
             className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
           >
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
