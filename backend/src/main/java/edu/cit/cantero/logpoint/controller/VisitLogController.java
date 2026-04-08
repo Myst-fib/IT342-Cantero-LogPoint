@@ -1,62 +1,79 @@
 package edu.cit.cantero.logpoint.controller;
 
+import edu.cit.cantero.logpoint.dto.UserDTO;
 import edu.cit.cantero.logpoint.dto.VisitLogDTO;
 import edu.cit.cantero.logpoint.service.VisitLogService;
-import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/visit-logs")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class VisitLogController {
 
     @Autowired
     private VisitLogService visitLogService;
 
     @PostMapping("/check-in")
-    public ResponseEntity<VisitLogDTO> checkIn(@Valid @RequestBody VisitLogDTO visitLogDTO,
-                                                Authentication authentication) {
-        String email = authentication.getName();
-        VisitLogDTO visitLog = visitLogService.checkIn(visitLogDTO, email);
-        return ResponseEntity.ok(visitLog);
+    public ResponseEntity<VisitLogDTO> checkIn(@RequestBody VisitLogDTO visitLogDTO, HttpSession session) {
+        String userEmail = extractEmailFromSession(session);
+        if (userEmail == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        VisitLogDTO createdLog = visitLogService.checkIn(visitLogDTO, userEmail);
+        return new ResponseEntity<>(createdLog, HttpStatus.CREATED);
     }
 
     @PostMapping("/check-out/{id}")
-    public ResponseEntity<VisitLogDTO> checkOut(@PathVariable Long id) {
-        VisitLogDTO visitLog = visitLogService.checkOut(id);
-        return ResponseEntity.ok(visitLog);
+    public ResponseEntity<VisitLogDTO> checkOut(@PathVariable Long id, HttpSession session) {
+        String userEmail = extractEmailFromSession(session);
+        if (userEmail == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        VisitLogDTO updatedLog = visitLogService.checkOut(id, userEmail);
+        return ResponseEntity.ok(updatedLog);
     }
 
     @GetMapping
-    public ResponseEntity<List<VisitLogDTO>> getAllVisitLogs() {
-        // No Authentication parameter — service already returns all logs
-        List<VisitLogDTO> visitLogs = visitLogService.getAllVisitLogs();
+    public ResponseEntity<List<VisitLogDTO>> getVisitLogs(HttpSession session) {
+        String userEmail = extractEmailFromSession(session);
+        if (userEmail == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        // IMPORTANT: This now returns ONLY logs created by the current user
+        List<VisitLogDTO> visitLogs = visitLogService.getVisitLogsByUser(userEmail);
         return ResponseEntity.ok(visitLogs);
     }
-
+    
     @GetMapping("/active")
-    public ResponseEntity<List<VisitLogDTO>> getActiveVisits(Authentication authentication) {
-        String email = authentication.getName();
-        List<VisitLogDTO> activeVisits = visitLogService.getActiveVisitsByUser(email);
+    public ResponseEntity<List<VisitLogDTO>> getActiveVisits(HttpSession session) {
+        String userEmail = extractEmailFromSession(session);
+        if (userEmail == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        List<VisitLogDTO> activeVisits = visitLogService.getActiveVisitsByUser(userEmail);
         return ResponseEntity.ok(activeVisits);
     }
 
     @GetMapping("/visitor/{visitorId}")
-    public ResponseEntity<List<VisitLogDTO>> getVisitLogsByVisitor(@PathVariable Long visitorId) {
+    public ResponseEntity<List<VisitLogDTO>> getVisitLogsByVisitor(@PathVariable Long visitorId, HttpSession session) {
+        String userEmail = extractEmailFromSession(session);
+        if (userEmail == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         List<VisitLogDTO> visitLogs = visitLogService.getVisitLogsByVisitor(visitorId);
         return ResponseEntity.ok(visitLogs);
     }
 
-    @GetMapping("/date-range")
-    public ResponseEntity<List<VisitLogDTO>> getVisitLogsByDateRange(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        List<VisitLogDTO> visitLogs = visitLogService.getVisitLogsBetweenDates(startDate, endDate);
-        return ResponseEntity.ok(visitLogs);
+    private String extractEmailFromSession(HttpSession session) {
+        Object userObj = session.getAttribute("user");
+        if (userObj instanceof UserDTO userDTO) {
+            return userDTO.getEmail();
+        }
+        return null;
     }
 }

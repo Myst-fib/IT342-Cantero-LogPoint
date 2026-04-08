@@ -57,19 +57,19 @@ public class VisitLogService {
         return convertToDTO(savedVisitLog);
     }
 
-    public VisitLogDTO checkOut(Long id) {
+    public VisitLogDTO checkOut(Long id, String userEmail) {  // add userEmail param
         VisitLog visitLog = visitLogRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Visit log not found"));
-
         visitLog.setTimeOut(LocalDateTime.now());
         visitLog.setStatus("COMPLETED");
-
-        VisitLog updatedVisitLog = visitLogRepository.save(visitLog);
-        return convertToDTO(updatedVisitLog);
+        return convertToDTO(visitLogRepository.save(visitLog));
     }
 
     public List<VisitLogDTO> getVisitLogsByUser(String userEmail) {
-        return visitLogRepository.findAll()
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return visitLogRepository.findByCreatedBy_Id(user.getId())
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -92,6 +92,7 @@ public class VisitLogService {
 
         return visitLogRepository.findByVisitor(visitor)
                 .stream()
+                .filter(log -> log.getCreatedBy() != null) // only logs with an owner
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

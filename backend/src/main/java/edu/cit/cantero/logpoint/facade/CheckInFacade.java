@@ -4,6 +4,7 @@ import edu.cit.cantero.logpoint.dto.VisitorDTO;
 import edu.cit.cantero.logpoint.entity.Purpose;
 import edu.cit.cantero.logpoint.entity.VisitLog;
 import edu.cit.cantero.logpoint.entity.Visitor;
+import edu.cit.cantero.logpoint.entity.User;
 import edu.cit.cantero.logpoint.repository.PurposeRepository;
 import edu.cit.cantero.logpoint.repository.VisitLogRepository;
 import edu.cit.cantero.logpoint.repository.VisitorRepository;
@@ -44,11 +45,12 @@ public class CheckInFacade {
                 });
     }
 
-    public VisitLog createVisitLog(Visitor visitor, Purpose purpose, String hostName) {
+    public VisitLog createVisitLog(Visitor visitor, Purpose purpose, String hostName, User createdBy) {
         VisitLog visitLog = new VisitLog();
         visitLog.setVisitor(visitor);
         visitLog.setPurpose(purpose);
         visitLog.setHostName(hostName);
+        visitLog.setCreatedBy(createdBy);  // ← add this
         visitLog.setTimeIn(LocalDateTime.now());
         visitLog.setStatus("ACTIVE");
         visitLog.setQrCode(UUID.randomUUID().toString().replace("-", "").substring(0, 16));
