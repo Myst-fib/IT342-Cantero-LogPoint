@@ -36,9 +36,6 @@ public class VisitLog {
 
     private String notes;
 
-    @Column(name = "qr_code")
-    private String qrCode;
-
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -83,9 +80,6 @@ public class VisitLog {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
-
-    public String getQrCode() { return qrCode; }
-    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
