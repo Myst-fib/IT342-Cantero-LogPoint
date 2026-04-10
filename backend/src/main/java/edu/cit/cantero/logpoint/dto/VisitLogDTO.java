@@ -21,7 +21,6 @@ public class VisitLogDTO {
     private String status;
     private String hostName;
     private String notes;
-    private String qrCode;
     private Long createdById;
     private String createdByName;
     
@@ -58,9 +57,6 @@ public class VisitLogDTO {
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
-    
-    public String getQrCode() { return qrCode; }
-    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
     
     public Long getCreatedById() { return createdById; }
     public void setCreatedById(Long createdById) { this.createdById = createdById; }
