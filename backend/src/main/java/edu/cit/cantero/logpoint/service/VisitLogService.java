@@ -51,7 +51,6 @@ public class VisitLogService {
         visitLog.setStatus("ACTIVE");
         visitLog.setHostName(visitLogDTO.getHostName());
         visitLog.setNotes(visitLogDTO.getNotes());
-        visitLog.setQrCode(generateQRCode());
 
         VisitLog savedVisitLog = visitLogRepository.save(visitLog);
         return convertToDTO(savedVisitLog);
@@ -104,10 +103,6 @@ public class VisitLogService {
                 .collect(Collectors.toList());
     }
 
-    private String generateQRCode() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-    }
-
     private VisitLogDTO convertToDTO(VisitLog visitLog) {
         VisitLogDTO dto = new VisitLogDTO();
         dto.setId(visitLog.getId());
@@ -120,7 +115,6 @@ public class VisitLogService {
         dto.setStatus(visitLog.getStatus());
         dto.setHostName(visitLog.getHostName());
         dto.setNotes(visitLog.getNotes());
-        dto.setQrCode(visitLog.getQrCode());
 
         // Null-safe createdBy
         if (visitLog.getCreatedBy() != null) {
