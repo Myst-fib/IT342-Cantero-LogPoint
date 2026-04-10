@@ -442,18 +442,6 @@
   font-size: 16px;
 }
 
-/* ===== QR CODE ===== */
-.qr-code {
-  font-size: 11px;
-  font-family: 'Courier New', monospace;
-  color: var(--text-medium);
-  background: var(--bg-light);
-  padding: 3px 7px;
-  border-radius: 4px;
-  border: 1px solid var(--border-light);
-  letter-spacing: 0.5px;
-}
-
 /* ===== STATUS BADGE ===== */
 .status-badge {
   display: inline-flex;
