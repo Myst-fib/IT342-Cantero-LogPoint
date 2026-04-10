@@ -13,12 +13,9 @@ public interface VisitorRepository extends JpaRepository<Visitor, Long> {
     // Get all visitors ordered by creation date (newest first)
     List<Visitor> findAllByOrderByCreatedAtDesc();
     
-    // Search visitors by name, host, or department
-    @Query("SELECT v FROM Visitor v WHERE v.visitorName LIKE %:search% OR v.host LIKE %:search% OR v.department LIKE %:search%")
+    // Search visitors by name or host
+    @Query("SELECT v FROM Visitor v WHERE v.visitorName LIKE %:search% OR v.host LIKE %:search%")
     List<Visitor> searchVisitors(@Param("search") String search);
-    
-    // Optional: Find by department if needed
-    List<Visitor> findByDepartment(String department);
     
     // Optional: Find by purpose if needed
     List<Visitor> findByPurpose(String purpose);

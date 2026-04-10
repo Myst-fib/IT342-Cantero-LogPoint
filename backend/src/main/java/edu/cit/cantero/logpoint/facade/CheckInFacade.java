@@ -32,7 +32,6 @@ public class CheckInFacade {
         visitor.setContactNo(visitorDTO.getContactNo());
         visitor.setHost(visitorDTO.getHost());
         visitor.setPurpose(visitorDTO.getPurpose());
-        visitor.setDepartment(visitorDTO.getDepartment());
         return visitorRepository.save(visitor);
     }
 

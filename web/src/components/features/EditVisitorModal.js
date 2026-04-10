@@ -3,13 +3,12 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
-import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
+
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 
 const PURPOSES = ['Meeting', 'Interview', 'Delivery', 'Vendor Visit', 'Maintenance', 'Other'];
-const DEPARTMENTS = ['Human Resources', 'Engineering', 'Finance', 'IT', 'Facilities', 'Executive', 'Other'];
 
 function EditVisitorModal({ log, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -17,8 +16,6 @@ function EditVisitorModal({ log, onClose, onSave }) {
     purpose: '',
     otherPurpose: '',
     host: '',
-    department: '',
-    otherDepartment: '',
     contactNo: '',  // Changed from contactNumber to contactNo
   });
   const [loading, setLoading] = useState(false);
@@ -26,18 +23,18 @@ function EditVisitorModal({ log, onClose, onSave }) {
 
   useEffect(() => {
     if (!log) return;
+    
+    console.log('Editing visitor with ID:', log.id); // Add this line
+    console.log('Visitor data:', log); // Add this line
 
     const isOtherPurpose = !PURPOSES.slice(0, -1).includes(log.purposeName);
-    const isOtherDept = !DEPARTMENTS.slice(0, -1).includes(log.departmentName);
 
     setFormData({
       visitorName: log.visitorName || '',
       purpose: isOtherPurpose ? 'Other' : (log.purposeName || ''),
       otherPurpose: isOtherPurpose ? (log.purposeName || '') : '',
       host: log.hostName || '',
-      department: isOtherDept ? 'Other' : (log.departmentName || ''),
-      otherDepartment: isOtherDept ? (log.departmentName || '') : '',
-      contactNo: log.contactNo || '',  // Changed from contactNumber
+      contactNo: log.contactNo || '',
     });
   }, [log]);
 
@@ -53,8 +50,6 @@ function EditVisitorModal({ log, onClose, onSave }) {
     if (!formData.purpose) return setError('Please select a purpose.');
     if (formData.purpose === 'Other' && !formData.otherPurpose.trim()) return setError('Please specify the purpose.');
     if (!formData.host.trim()) return setError('Host name is required.');
-    if (!formData.department) return setError('Please select a department.');
-    if (formData.department === 'Other' && !formData.otherDepartment.trim()) return setError('Please specify the department.');
     if (!formData.contactNo.trim()) return setError('Contact number is required.');
 
     setLoading(true);
@@ -65,13 +60,12 @@ function EditVisitorModal({ log, onClose, onSave }) {
         visitorName: formData.visitorName,
         purpose: formData.purpose === 'Other' ? formData.otherPurpose : formData.purpose,
         host: formData.host,
-        department: formData.department === 'Other' ? formData.otherDepartment : formData.department,
         contactNo: formData.contactNo,  // Changed from contactNumber
       };
 
       console.log('Sending update payload:', payload); // Debug log
 
-      const response = await fetch(`http://localhost:8080/api/visit-logs/${log.id}`, {
+      const response = await fetch(`http://localhost:8080/api/visitors/${log.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -179,41 +173,6 @@ function EditVisitorModal({ log, onClose, onSave }) {
                 />
               </div>
             </div>
-
-            {/* Department */}
-            <div className="edit-form-group">
-              <label className="form-label">Department <span className="required">*</span></label>
-              <div className="input-icon-wrapper">
-                <BusinessOutlinedIcon className="input-field-icon" />
-                <select
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  className="form-input with-icon"
-                >
-                  <option value="">Select department</option>
-                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Other Department */}
-            {formData.department === 'Other' && (
-              <div className="edit-form-group">
-                <label className="form-label">Specify Department <span className="required">*</span></label>
-                <div className="input-icon-wrapper">
-                  <EditNoteOutlinedIcon className="input-field-icon" />
-                  <input
-                    type="text"
-                    name="otherDepartment"
-                    value={formData.otherDepartment}
-                    onChange={handleChange}
-                    className="form-input with-icon"
-                    placeholder="Please specify the department"
-                  />
-                </div>
-              </div>
-            )}
 
             {/* Contact Number */}
             <div className="edit-form-group">

@@ -65,7 +65,6 @@ public class VisitorService {
         visitor.setContactNo(visitorDTO.getContactNo());
         visitor.setHost(visitorDTO.getHost());
         visitor.setPurpose(visitorDTO.getPurpose());
-        visitor.setDepartment(visitorDTO.getDepartment());
 
         Visitor updatedVisitor = visitorRepository.save(visitor);
         return convertToDTO(updatedVisitor);
@@ -85,7 +84,6 @@ public class VisitorService {
         dto.setContactNo(visitor.getContactNo());
         dto.setHost(visitor.getHost());
         dto.setPurpose(visitor.getPurpose());
-        dto.setDepartment(visitor.getDepartment());
         dto.setCreatedAt(visitor.getCreatedAt());
         dto.setUpdatedAt(visitor.getUpdatedAt());
         return dto;

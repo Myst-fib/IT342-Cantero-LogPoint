@@ -12,6 +12,7 @@ import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import PieChartOutlineOutlinedIcon from '@mui/icons-material/PieChartOutlineOutlined';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -26,7 +27,6 @@ import {
 } from 'chart.js';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 
-// Register ChartJS components
 ChartJS.register(
   ArcElement,
   CategoryScale,
@@ -47,12 +47,19 @@ const Dashboard = () => {
     completedToday: 0,
     weeklyData: [],
     purposeDistribution: {},
-    hourlyTraffic: []
+    hourlyTraffic: [],
+    monthlyData: [],
+    thisMonthCount: 0,
+    lastMonthCount: 0,
+    ytd: 0,
+    momGrowth: null,
+    avgPerDay: 0,
+    peakMonth: null,
+    lowMonth: null,
   });
   const [loading, setLoading] = useState(true);
   const [banner, setBanner] = useState({ show: false, message: '', type: 'success' });
   const [currentDate, setCurrentDate] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('week');
 
   const getPhilippineDate = () => {
     const now = new Date();
@@ -82,7 +89,7 @@ const Dashboard = () => {
 
   const calculateStats = (logs) => {
     const today = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
-    
+
     // Basic stats
     const todayLogs = logs.filter(log => {
       const logDate = new Date(log.timeIn).toLocaleDateString('en-US', { timeZone: 'Asia/Manila' });
@@ -122,11 +129,54 @@ const Dashboard = () => {
         const logHour = new Date(log.timeIn).getHours();
         return logHour === i;
       });
-      hourlyTraffic.push({
-        hour: i,
-        count: hourLogs.length
+      hourlyTraffic.push({ hour: i, count: hourLogs.length });
+    }
+
+    // Monthly data (last 12 months)
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const monthlyData = [];
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(currentYear, currentMonth - i, 1);
+      const targetMonth = d.getMonth();
+      const targetYear = d.getFullYear();
+      const monthLogs = logs.filter(log => {
+        const ld = new Date(log.timeIn);
+        return ld.getMonth() === targetMonth && ld.getFullYear() === targetYear;
+      });
+      monthlyData.push({
+        month: d.toLocaleDateString('en-US', { month: 'short' }),
+        fullMonth: d.toLocaleDateString('en-US', { month: 'long' }),
+        count: monthLogs.length,
+        isCurrent: i === 0,
       });
     }
+
+    const thisMonthCount = monthlyData[11].count;
+    const lastMonthCount = monthlyData[10].count;
+
+    // Year-to-date: all logs in current year
+    const ytd = logs.filter(log => new Date(log.timeIn).getFullYear() === currentYear).length;
+
+    // MoM growth
+    const momGrowth = lastMonthCount > 0
+      ? parseFloat((((thisMonthCount - lastMonthCount) / lastMonthCount) * 100).toFixed(1))
+      : null;
+
+    // Avg visitors per day this month
+    const dayOfMonth = now.getDate();
+    const avgPerDay = dayOfMonth > 0 ? Math.round(thisMonthCount / dayOfMonth) : 0;
+
+    // Peak and lowest months (from actual data)
+    const nonZeroMonths = monthlyData.filter(m => m.count > 0);
+    const peakMonth = nonZeroMonths.length > 0
+      ? [...nonZeroMonths].sort((a, b) => b.count - a.count)[0].fullMonth
+      : null;
+    const lowMonth = nonZeroMonths.length > 0
+      ? [...nonZeroMonths].sort((a, b) => a.count - b.count)[0].fullMonth
+      : null;
 
     setStats({
       daily: todayLogs.length,
@@ -135,20 +185,26 @@ const Dashboard = () => {
       completedToday: completedToday.length,
       weeklyData,
       purposeDistribution: purposeCount,
-      hourlyTraffic
+      hourlyTraffic,
+      monthlyData,
+      thisMonthCount,
+      lastMonthCount,
+      ytd,
+      momGrowth,
+      avgPerDay,
+      peakMonth,
+      lowMonth,
     });
   };
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
-
     try {
       const logsResponse = await fetch('http://localhost:8080/api/visit-logs', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-
       if (logsResponse.ok) {
         const logs = await logsResponse.json();
         calculateStats(logs);
@@ -168,15 +224,16 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Chart configurations
+  // ── Chart configurations ──────────────────────────────────────────────────
+
   const weeklyChartData = {
     labels: stats.weeklyData.map(d => d.date),
     datasets: [
       {
         label: 'Visitors',
         data: stats.weeklyData.map(d => d.count),
-        backgroundColor: 'rgba(0, 74, 173, 0.8)',
-        borderRadius: 8,
+        backgroundColor: 'rgba(0, 74, 173, 0.82)',
+        borderRadius: 7,
         borderSkipped: false,
       }
     ]
@@ -188,12 +245,12 @@ const Dashboard = () => {
       {
         data: Object.values(stats.purposeDistribution),
         backgroundColor: [
-          'rgba(0, 74, 173, 0.8)',
-          'rgba(76, 175, 80, 0.8)',
-          'rgba(255, 152, 0, 0.8)',
-          'rgba(33, 150, 243, 0.8)',
-          'rgba(156, 39, 176, 0.8)',
-          'rgba(233, 30, 99, 0.8)',
+          'rgba(0, 74, 173, 0.85)',
+          'rgba(29, 158, 117, 0.85)',
+          'rgba(186, 117, 23, 0.85)',
+          'rgba(33, 150, 243, 0.85)',
+          'rgba(156, 39, 176, 0.85)',
+          'rgba(216, 90, 48, 0.85)',
         ],
         borderWidth: 0,
       }
@@ -207,47 +264,81 @@ const Dashboard = () => {
         label: 'Visitors',
         data: stats.hourlyTraffic.map(h => h.count),
         borderColor: 'rgba(0, 74, 173, 1)',
-        backgroundColor: 'rgba(0, 74, 173, 0.1)',
+        backgroundColor: 'rgba(0, 74, 173, 0.08)',
         tension: 0.4,
         fill: true,
         pointBackgroundColor: 'rgba(0, 74, 173, 1)',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 3,
+        pointHoverRadius: 5,
       }
     ]
   };
 
-  const chartOptions = {
+  const monthlyChartData = {
+    labels: stats.monthlyData.map(d => d.month),
+    datasets: [
+      {
+        label: 'Visitors',
+        data: stats.monthlyData.map(d => d.count),
+        backgroundColor: stats.monthlyData.map(d =>
+          d.isCurrent ? 'rgba(0, 74, 173, 1)' : 'rgba(0, 74, 173, 0.45)'
+        ),
+        borderRadius: 6,
+        borderSkipped: false,
+        borderWidth: 0,
+      }
+    ]
+  };
+
+  const baseChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(10, 10, 20, 0.88)',
         padding: 12,
         titleColor: '#fff',
-        bodyColor: '#fff',
+        bodyColor: '#ccc',
         borderColor: 'rgba(0, 74, 173, 0.3)',
         borderWidth: 1,
+        cornerRadius: 8,
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-        ticks: {
-          stepSize: 1,
-        },
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: { stepSize: 1, font: { size: 11 }, color: '#999' },
       },
       x: {
-        grid: {
-          display: false,
+        grid: { display: false },
+        ticks: { font: { size: 11 }, color: '#999' },
+      },
+    },
+  };
+
+  const monthlyChartOptions = {
+    ...baseChartOptions,
+    plugins: {
+      ...baseChartOptions.plugins,
+      tooltip: {
+        ...baseChartOptions.plugins.tooltip,
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.y.toLocaleString()} visitors`,
+        },
+      },
+    },
+    scales: {
+      ...baseChartOptions.scales,
+      x: {
+        ...baseChartOptions.scales.x,
+        ticks: {
+          ...baseChartOptions.scales.x.ticks,
+          autoSkip: false,
+          maxRotation: 0,
         },
       },
     },
@@ -260,23 +351,28 @@ const Dashboard = () => {
       legend: {
         position: 'bottom',
         labels: {
-          boxWidth: 12,
-          padding: 15,
-          font: {
-            size: 11,
-          },
+          boxWidth: 10,
+          padding: 14,
+          font: { size: 11 },
         },
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(10,10,20,0.88)',
         padding: 12,
+        cornerRadius: 8,
       },
     },
   };
 
+  // ── Derived monthly footer values ─────────────────────────────────────────
+  const momPositive = stats.momGrowth !== null && stats.momGrowth >= 0;
+  const momLabel = stats.momGrowth !== null
+    ? `${momPositive ? '+' : ''}${stats.momGrowth}%`
+    : '—';
+
   return (
     <div className="dashboard-wrapper">
-      {/* Banner Notification */}
+      {/* Banner */}
       {banner.show && (
         <div className={`banner-notification ${banner.type}`}>
           <div className="banner-content">
@@ -319,7 +415,7 @@ const Dashboard = () => {
           <>
             {/* Stats Cards */}
             <div className="stats-grid">
-              <div className="stat-card stat-daily">
+              <div className="stat-card">
                 <div className="stat-icon-wrap">
                   <EventNoteOutlinedIcon className="stat-icon" />
                 </div>
@@ -333,12 +429,12 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="stat-card stat-total">
+              <div className="stat-card">
                 <div className="stat-icon-wrap">
                   <PeopleAltOutlinedIcon className="stat-icon" />
                 </div>
                 <div className="stat-info">
-                  <div className="stat-value">{stats.total}</div>
+                  <div className="stat-value">{stats.total.toLocaleString()}</div>
                   <div className="stat-label">Total Visitors</div>
                 </div>
                 <div className="stat-trend">
@@ -346,7 +442,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="stat-card stat-active">
+              <div className="stat-card">
                 <div className="stat-icon-wrap active">
                   <RadioButtonUncheckedOutlinedIcon className="stat-icon" />
                 </div>
@@ -359,7 +455,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="stat-card stat-completed">
+              <div className="stat-card">
                 <div className="stat-icon-wrap completed">
                   <CheckCircleOutlineOutlinedIcon className="stat-icon" />
                 </div>
@@ -375,7 +471,7 @@ const Dashboard = () => {
 
             {/* Charts Section */}
             <div className="charts-grid">
-              {/* Weekly Trend Chart */}
+              {/* Weekly Trend */}
               <div className="chart-card">
                 <div className="chart-header">
                   <div className="chart-title">
@@ -388,11 +484,11 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="chart-body">
-                  <Bar data={weeklyChartData} options={chartOptions} />
+                  <Bar data={weeklyChartData} options={baseChartOptions} />
                 </div>
               </div>
 
-              {/* Purpose Distribution Chart */}
+              {/* Purpose Distribution */}
               <div className="chart-card">
                 <div className="chart-header">
                   <div className="chart-title">
@@ -412,7 +508,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Hourly Traffic Chart */}
+              {/* Hourly Traffic */}
               <div className="chart-card full-width">
                 <div className="chart-header">
                   <div className="chart-title">
@@ -421,83 +517,107 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="chart-body">
-                  <Line data={hourlyChartData} options={chartOptions} />
+                  <Line data={hourlyChartData} options={baseChartOptions} />
                 </div>
               </div>
             </div>
 
-            {/* Quick Stats Summary */}
-            <div className="summary-cards">
-              <div className="summary-card">
-                <div className="summary-header">
-                  <span className="summary-icon">📊</span>
-                  <span className="summary-title">Peak Hours</span>
+            {/* ── Monthly Visitors Section ────────────────────────────── */}
+            <div className="monthly-section">
+              <div className="section-label">
+                <CalendarMonthOutlinedIcon style={{ fontSize: 16, opacity: 0.7 }} />
+                Monthly Visitors
+              </div>
+
+              {/* KPI metric cards */}
+              <div className="monthly-metrics">
+                <div className="monthly-metric">
+                  <div className="monthly-metric-top">
+                    <span className="monthly-metric-label">This Month</span>
+                    {stats.momGrowth !== null && (
+                      <span className={`monthly-badge ${momPositive ? 'pos' : 'neg'}`}>
+                        {momPositive ? '▲' : '▼'} {Math.abs(stats.momGrowth)}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="monthly-metric-value">{stats.thisMonthCount.toLocaleString()}</div>
+                  <div className="monthly-metric-sub">vs {stats.lastMonthCount.toLocaleString()} last month</div>
                 </div>
-                <div className="summary-content">
-                  {stats.hourlyTraffic.length > 0 ? (
-                    (() => {
-                      const maxTraffic = Math.max(...stats.hourlyTraffic.map(h => h.count));
-                      const peakHours = stats.hourlyTraffic
-                        .filter(h => h.count === maxTraffic && h.count > 0)
-                        .map(h => `${h.hour}:00 - ${h.hour + 1}:00`);
-                      
-                      return peakHours.length > 0 ? (
-                        <p className="summary-value">{peakHours.join(', ')}</p>
-                      ) : (
-                        <p className="summary-placeholder">No data yet</p>
-                      );
-                    })()
-                  ) : (
-                    <p className="summary-placeholder">Loading...</p>
-                  )}
-                  <p className="summary-label">Busiest time periods</p>
+
+                <div className="monthly-metric">
+                  <div className="monthly-metric-top">
+                    <span className="monthly-metric-label">Last Month</span>
+                  </div>
+                  <div className="monthly-metric-value">{stats.lastMonthCount.toLocaleString()}</div>
+                  <div className="monthly-metric-sub">completed period</div>
+                </div>
+
+                <div className="monthly-metric">
+                  <div className="monthly-metric-top">
+                    <span className="monthly-metric-label">Year to Date</span>
+                  </div>
+                  <div className="monthly-metric-value">{stats.ytd.toLocaleString()}</div>
+                  <div className="monthly-metric-sub">total visitors {new Date().getFullYear()}</div>
+                </div>
+
+                <div className="monthly-metric">
+                  <div className="monthly-metric-top">
+                    <span className="monthly-metric-label">Daily Average</span>
+                  </div>
+                  <div className="monthly-metric-value">{stats.avgPerDay}</div>
+                  <div className="monthly-metric-sub">visitors / day this month</div>
                 </div>
               </div>
 
-              <div className="summary-card">
-                <div className="summary-header">
-                  <span className="summary-icon">🎯</span>
-                  <span className="summary-title">Top Purpose</span>
+              {/* Monthly bar chart */}
+              <div className="chart-card">
+                <div className="chart-header">
+                  <div className="chart-title">
+                    <BarChartOutlinedIcon className="chart-icon" />
+                    12-Month Visitor Trend
+                  </div>
+                  <div className="monthly-chart-legend">
+                    <span className="legend-swatch current"></span>
+                    <span className="legend-text">Current month</span>
+                    <span className="legend-swatch past"></span>
+                    <span className="legend-text">Prior months</span>
+                  </div>
                 </div>
-                <div className="summary-content">
-                  {Object.keys(stats.purposeDistribution).length > 0 ? (
-                    (() => {
-                      const topPurpose = Object.entries(stats.purposeDistribution)
-                        .sort((a, b) => b[1] - a[1])[0];
-                      return (
-                        <>
-                          <p className="summary-value">{topPurpose[0]}</p>
-                          <p className="summary-label">{topPurpose[1]} visits</p>
-                        </>
-                      );
-                    })()
-                  ) : (
-                    <p className="summary-placeholder">No data yet</p>
-                  )}
-                </div>
-              </div>
 
-              <div className="summary-card">
-                <div className="summary-header">
-                  <span className="summary-icon">⚡</span>
-                  <span className="summary-title">Avg Daily</span>
+                <div className="chart-body chart-body--tall">
+                  <Bar data={monthlyChartData} options={monthlyChartOptions} />
                 </div>
-                <div className="summary-content">
-                  {stats.weeklyData.length > 0 ? (
-                    (() => {
-                      const avg = Math.round(
-                        stats.weeklyData.reduce((sum, d) => sum + d.count, 0) / stats.weeklyData.length
-                      );
-                      return (
-                        <>
-                          <p className="summary-value">{avg}</p>
-                          <p className="summary-label">Visitors per day</p>
-                        </>
-                      );
-                    })()
-                  ) : (
-                    <p className="summary-placeholder">No data yet</p>
-                  )}
+
+                {/* Footer summary row */}
+                <div className="monthly-footer">
+                  <div className="monthly-footer-item">
+                    <span className="monthly-footer-label">Peak Month</span>
+                    <span className="monthly-footer-value">{stats.peakMonth ?? '—'}</span>
+                  </div>
+                  <div className="monthly-footer-divider" />
+                  <div className="monthly-footer-item">
+                    <span className="monthly-footer-label">Lowest Month</span>
+                    <span className="monthly-footer-value">{stats.lowMonth ?? '—'}</span>
+                  </div>
+                  <div className="monthly-footer-divider" />
+                  <div className="monthly-footer-item">
+                    <span className="monthly-footer-label">MoM Growth</span>
+                    <span className={`monthly-footer-value ${momPositive ? 'green' : 'red'}`}>
+                      {momLabel}
+                    </span>
+                  </div>
+                  <div className="monthly-footer-divider" />
+                  <div className="monthly-footer-item">
+                    <span className="monthly-footer-label">Avg / Month (12m)</span>
+                    <span className="monthly-footer-value">
+                      {stats.monthlyData.length > 0
+                        ? Math.round(
+                            stats.monthlyData.reduce((s, d) => s + d.count, 0) /
+                            stats.monthlyData.length
+                          ).toLocaleString()
+                        : '—'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -505,7 +625,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Floating Action Button */}
+      {/* FAB */}
       <Link className="fab" to="/add-visitor">+</Link>
     </div>
   );

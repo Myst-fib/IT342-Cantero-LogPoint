@@ -23,6 +23,7 @@ public class VisitLogDTO {
     private String notes;
     private Long createdById;
     private String createdByName;
+    private String contactNo;
     
     // Constructors
     public VisitLogDTO() {}
@@ -63,4 +64,7 @@ public class VisitLogDTO {
     
     public String getCreatedByName() { return createdByName; }
     public void setCreatedByName(String createdByName) { this.createdByName = createdByName; }
+
+    public String getContactNo() { return contactNo; }
+    public void setContactNo(String contactNo) { this.contactNo = contactNo; }
 }

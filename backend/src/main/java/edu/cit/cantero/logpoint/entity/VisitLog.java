@@ -34,8 +34,6 @@ public class VisitLog {
 
     private String hostName;
 
-    private String notes;
-
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -77,9 +75,6 @@ public class VisitLog {
 
     public String getHostName() { return hostName; }
     public void setHostName(String hostName) { this.hostName = hostName; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

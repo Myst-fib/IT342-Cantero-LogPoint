@@ -18,9 +18,6 @@ public class VisitorDTO {
     @NotBlank(message = "Purpose is required")
     private String purpose;
     
-    @NotBlank(message = "Department is required")
-    private String department;
-    
     private LocalDateTime timeIn;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -43,9 +40,6 @@ public class VisitorDTO {
     
     public String getPurpose() { return purpose; }
     public void setPurpose(String purpose) { this.purpose = purpose; }
-    
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
     
     public LocalDateTime getTimeIn() { return timeIn; }
     public void setTimeIn(LocalDateTime timeIn) { this.timeIn = timeIn; }

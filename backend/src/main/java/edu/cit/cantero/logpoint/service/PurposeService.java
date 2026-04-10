@@ -23,7 +23,6 @@ public class PurposeService {
 
         Purpose purpose = new Purpose();
         purpose.setName(purposeDTO.getName());
-        purpose.setDescription(purposeDTO.getDescription());
 
         Purpose savedPurpose = purposeRepository.save(purpose);
         return convertToDTO(savedPurpose);
@@ -47,7 +46,6 @@ public class PurposeService {
                 .orElseThrow(() -> new RuntimeException("Purpose not found"));
 
         purpose.setName(purposeDTO.getName());
-        purpose.setDescription(purposeDTO.getDescription());
 
         Purpose updatedPurpose = purposeRepository.save(purpose);
         return convertToDTO(updatedPurpose);
@@ -61,7 +59,6 @@ public class PurposeService {
         PurposeDTO dto = new PurposeDTO();
         dto.setId(purpose.getId());
         dto.setName(purpose.getName());
-        dto.setDescription(purpose.getDescription());
         dto.setUsageCount((long) purpose.getVisitLogs().size());
         
         return dto;

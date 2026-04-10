@@ -13,9 +13,6 @@ public class UpdateVisitLogRequest {
     @NotBlank(message = "Host name is required")
     private String host;
     
-    @NotBlank(message = "Department is required")
-    private String department;
-    
     @NotBlank(message = "Contact number is required")
     private String contactNo;
     
@@ -28,9 +25,6 @@ public class UpdateVisitLogRequest {
     
     public String getHost() { return host; }
     public void setHost(String host) { this.host = host; }
-    
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
     
     public String getContactNo() { return contactNo; }
     public void setContactNo(String contactNo) { this.contactNo = contactNo; }

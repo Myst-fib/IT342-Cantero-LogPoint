@@ -51,7 +51,6 @@ public class VisitLogService {
         visitLog.setTimeIn(LocalDateTime.now());
         visitLog.setStatus("ACTIVE");
         visitLog.setHostName(visitLogDTO.getHostName());
-        visitLog.setNotes(visitLogDTO.getNotes());
 
         VisitLog savedVisitLog = visitLogRepository.save(visitLog);
         return convertToDTO(savedVisitLog);
@@ -109,13 +108,13 @@ public class VisitLogService {
         dto.setId(visitLog.getId());
         dto.setVisitorId(visitLog.getVisitor().getId());
         dto.setVisitorName(visitLog.getVisitor().getVisitorName());
+        dto.setContactNo(visitLog.getVisitor().getContactNo());
         dto.setPurposeId(visitLog.getPurpose().getId());
         dto.setPurposeName(visitLog.getPurpose().getName());
         dto.setTimeIn(visitLog.getTimeIn());
         dto.setTimeOut(visitLog.getTimeOut());
         dto.setStatus(visitLog.getStatus());
         dto.setHostName(visitLog.getHostName());
-        dto.setNotes(visitLog.getNotes());
 
         // Null-safe createdBy
         if (visitLog.getCreatedBy() != null) {

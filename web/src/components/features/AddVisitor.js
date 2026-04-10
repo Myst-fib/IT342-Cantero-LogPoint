@@ -1,4 +1,3 @@
-// AddVisitor.js - Add these states and functions
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/AddVisitor.css';
@@ -7,7 +6,6 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
-import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 
@@ -18,9 +16,7 @@ function AddVisitor() {
     purpose: '',
     otherPurpose: '',
     host: '',
-    department: '',
-    otherDepartment: '',
-    contactNumber: '+63 9',
+    contactNumber: '',
     timeIn: '',
   });
 
@@ -30,7 +26,6 @@ function AddVisitor() {
 
   const showBanner = (message, type = 'success') => {
     setBanner({ show: true, message, type });
-    // Auto hide after 3 seconds
     setTimeout(() => {
       hideBanner();
     }, 3000);
@@ -88,7 +83,7 @@ function AddVisitor() {
     setLoading(true);
 
     // Validation
-    if (!formData.visitorName) { 
+    if (!formData.visitorName.trim()) { 
       showBanner('Please enter visitor name', 'error');
       setLoading(false);
       return; 
@@ -103,35 +98,26 @@ function AddVisitor() {
       setLoading(false);
       return; 
     }
-    if (!formData.host) { 
+    if (!formData.host.trim()) { 
       showBanner('Please enter the host name', 'error');
       setLoading(false);
       return; 
     }
-    if (!formData.department) { 
-      showBanner('Please select a department', 'error');
-      setLoading(false);
-      return; 
-    }
-    if (formData.department === 'Other' && !formData.otherDepartment.trim()) { 
-      showBanner('Please specify the department', 'error');
-      setLoading(false);
-      return; 
-    }
-    if (!formData.contactNumber || formData.contactNumber === '+63 9') { 
-      showBanner('Please enter a complete contact number', 'error');
+    if (!formData.contactNumber.trim()) { 
+      showBanner('Please enter a contact number', 'error');
       setLoading(false);
       return; 
     }
 
-    // Prepare data for backend
+    // Prepare data for backend - Matches VisitorDTO exactly
     const submissionData = {
       visitorName: formData.visitorName,
       purpose: formData.purpose === 'Other' ? formData.otherPurpose : formData.purpose,
-      host: formData.host,
-      department: formData.department === 'Other' ? formData.otherDepartment : formData.department,
-      contactNo: formData.contactNumber
+      host: formData.host,  // Note: 'host' not 'hostName' - matches VisitorDTO
+      contactNo: formData.contactNumber,  // Note: 'contactNo' matches VisitorDTO
     };
+
+    console.log('Submitting to /api/visitors:', submissionData);
 
     try {
       const response = await fetch('http://localhost:8080/api/visitors', {
@@ -143,16 +129,18 @@ function AddVisitor() {
         body: JSON.stringify(submissionData)
       });
 
+      console.log('Response status:', response.status);
+
       if (response.ok) {
-        // Option 1: Use savedData if you need it
         const savedData = await response.json();
-        console.log('Saved visitor:', savedData); // This uses savedData
+        console.log('Saved visitor:', savedData);
         showBanner('✓ Visitor checked in successfully!', 'success');
         setTimeout(() => {
           navigate('/visitor-log');
         }, 1500);
       } else {
         const error = await response.text();
+        console.error('Server error:', error);
         showBanner(error || 'Failed to add visitor', 'error');
       }
     } catch (error) {
@@ -162,6 +150,7 @@ function AddVisitor() {
       setLoading(false);
     }
   };
+
   const handleCancel = () => navigate('/records');
 
   return (
@@ -287,53 +276,6 @@ function AddVisitor() {
                   </div>
                 </div>
 
-                {/* Department */}
-                <div className="form-group">
-                  <label className="form-label">
-                    Department <span className="required">*</span>
-                  </label>
-                  <div className="input-icon-wrapper">
-                    <BusinessOutlinedIcon className="input-field-icon" />
-                    <select
-                      name="department"
-                      value={formData.department}
-                      onChange={handleChange}
-                      className="form-input with-icon"
-                      required
-                    >
-                      <option value="">Select department</option>
-                      <option value="Human Resources">Human Resources</option>
-                      <option value="Engineering">Engineering</option>
-                      <option value="Finance">Finance</option>
-                      <option value="IT">IT</option>
-                      <option value="Facilities">Facilities</option>
-                      <option value="Executive">Executive</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Specify Department if Other */}
-                {formData.department === 'Other' && (
-                  <div className="form-group">
-                    <label className="form-label">
-                      Specify Department <span className="required">*</span>
-                    </label>
-                    <div className="input-icon-wrapper">
-                      <EditNoteOutlinedIcon className="input-field-icon" />
-                      <input
-                        type="text"
-                        name="otherDepartment"
-                        value={formData.otherDepartment}
-                        onChange={handleChange}
-                        className="form-input with-icon"
-                        placeholder="Please specify the department"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
                 {/* Contact Number */}
                 <div className="form-group">
                   <label className="form-label">
@@ -347,7 +289,7 @@ function AddVisitor() {
                       value={formData.contactNumber}
                       onChange={handleChange}
                       className="form-input with-icon"
-                      placeholder="+63 9XX XXX XXXX"
+                      placeholder="09123456789"
                       required
                     />
                   </div>

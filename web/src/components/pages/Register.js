@@ -393,8 +393,8 @@ function Register() {
                 required
               >
                 <option value="" disabled>Select Role</option> {/* <-- placeholder */}
-                <option value="Office Administrators">Office Administrators</option>
-                <option value="Security Guards">Security Guards</option>
+                <option value="Office Administrator">Office Administrator</option>
+                <option value="Security Guard">Security Guard</option>
               </select>
             </div>
           </div>

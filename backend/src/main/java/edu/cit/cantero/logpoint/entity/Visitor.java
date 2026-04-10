@@ -11,20 +11,17 @@ public class Visitor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "visitor_name", nullable = false)
+    @Column(name = "visitor_name", nullable = false, length = 100)
     private String visitorName;
 
-    @Column(name = "contact_no", nullable = false)
+    @Column(name = "contact_no", nullable = false, length = 50)
     private String contactNo;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String host;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String purpose;
-
-    @Column(nullable = false)
-    private String department;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -35,12 +32,11 @@ public class Visitor {
     // Constructors
     public Visitor() {}
 
-    public Visitor(String visitorName, String contactNo, String host, String purpose, String department) {
+    public Visitor(String visitorName, String contactNo, String host, String purpose) {
         this.visitorName = visitorName;
         this.contactNo = contactNo;
         this.host = host;
         this.purpose = purpose;
-        this.department = department;
     }
 
     // Getters and Setters
@@ -59,19 +55,11 @@ public class Visitor {
     public String getPurpose() { return purpose; }
     public void setPurpose(String purpose) { this.purpose = purpose; }
 
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
-
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    // Add this method for VisitLogService
-    public String getFullName() {
-        return this.visitorName;
-    }
 
     @PrePersist
     protected void onCreate() {

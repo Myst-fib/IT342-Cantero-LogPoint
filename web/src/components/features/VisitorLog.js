@@ -207,6 +207,8 @@ function VisitorLog() {
 
   // ── Edit ──
   const handleEdit = (log) => {
+    // Make sure log.id is the actual database ID
+    console.log('Editing visitor with ID:', log.id);
     setEditModal({ show: true, log });
   };
 
@@ -438,7 +440,7 @@ function VisitorLog() {
                             </div>
                             <div className="visitor-info">
                               <div className="visitor-name">{log.visitorName || '—'}</div>
-                              <div className="visitor-id">ID #{log.id}</div>
+                              <div className="visitor-id">{log.contactNo || '—'}</div>
                             </div>
                           </div>
                         </td>

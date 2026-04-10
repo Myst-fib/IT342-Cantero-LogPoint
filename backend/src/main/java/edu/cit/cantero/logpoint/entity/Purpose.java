@@ -16,8 +16,6 @@ public class Purpose {
     @Column(nullable = false, unique = true)
     private String name;
 
-    private String description;
-
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -40,9 +38,6 @@ public class Purpose {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
