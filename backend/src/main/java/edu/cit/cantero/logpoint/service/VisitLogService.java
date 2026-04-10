@@ -1,5 +1,6 @@
 package edu.cit.cantero.logpoint.service;
 
+import edu.cit.cantero.logpoint.dto.UpdateVisitLogRequest;
 import edu.cit.cantero.logpoint.dto.VisitLogDTO;
 import edu.cit.cantero.logpoint.entity.Purpose;
 import edu.cit.cantero.logpoint.entity.User;
@@ -134,4 +135,65 @@ public class VisitLogService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     } 
+    public VisitLogDTO updateVisitLog(Long id, UpdateVisitLogRequest updateRequest, String userEmail) {
+        // Verify user exists
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Find the visit log
+        VisitLog visitLog = visitLogRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Visit log not found with id: " + id));
+        
+        // Optional: Check permission - only allow user who created the log to edit
+        if (!visitLog.getCreatedBy().getId().equals(user.getId())) {
+            throw new RuntimeException("You don't have permission to edit this record");
+        }
+        
+        // Update the visitor information
+        Visitor visitor = visitLog.getVisitor();
+        if (visitor != null) {
+            visitor.setVisitorName(updateRequest.getVisitorName());
+            visitor.setContactNo(updateRequest.getContactNo());
+            visitorRepository.save(visitor);
+        } else {
+            // Create new visitor if for some reason it doesn't exist
+            Visitor newVisitor = new Visitor();
+            newVisitor.setVisitorName(updateRequest.getVisitorName());
+            newVisitor.setContactNo(updateRequest.getContactNo());
+            Visitor savedVisitor = visitorRepository.save(newVisitor);
+            visitLog.setVisitor(savedVisitor);
+        }
+        
+        // Update purpose (find or create)
+        Purpose purpose = purposeRepository.findByName(updateRequest.getPurpose())
+                .orElseGet(() -> {
+                    Purpose newPurpose = new Purpose();
+                    newPurpose.setName(updateRequest.getPurpose());
+                    return purposeRepository.save(newPurpose);
+                });
+        visitLog.setPurpose(purpose);
+        
+        // Update host name
+        visitLog.setHostName(updateRequest.getHost());
+        
+        // Save the updated log
+        VisitLog updatedLog = visitLogRepository.save(visitLog);
+        
+        return convertToDTO(updatedLog);
+    }
+
+    public void deleteVisitLog(Long id, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        VisitLog visitLog = visitLogRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Visit log not found"));
+        
+        // Check if user owns this log (optional)
+        if (!visitLog.getCreatedBy().getId().equals(user.getId())) {
+            throw new RuntimeException("You don't have permission to delete this record");
+        }
+        
+        visitLogRepository.delete(visitLog);
+    }
 }
