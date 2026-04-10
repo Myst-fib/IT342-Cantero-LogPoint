@@ -53,7 +53,6 @@ public class CheckInFacade {
         visitLog.setCreatedBy(createdBy);  // ← add this
         visitLog.setTimeIn(LocalDateTime.now());
         visitLog.setStatus("ACTIVE");
-        visitLog.setQrCode(UUID.randomUUID().toString().replace("-", "").substring(0, 16));
         return visitLogRepository.save(visitLog);
     }
 }
