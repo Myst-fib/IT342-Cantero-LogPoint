@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import '../../styles/VisitorLog.css';
+import EditVisitorModal from './EditVisitorModal';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
@@ -14,6 +15,9 @@ import RadioButtonUncheckedOutlinedIcon from '@mui/icons-material/RadioButtonUnc
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 
 function VisitorLog() {
   const [visitLogs, setVisitLogs] = useState([]);
@@ -23,11 +27,16 @@ function VisitorLog() {
   const [banner, setBanner] = useState({ show: false, message: '', type: 'success' });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [dateFilter, setDateFilter] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [checkingOut, setCheckingOut] = useState(null);
+
+  // Modals
   const [confirmModal, setConfirmModal] = useState({ show: false, logId: null, visitorName: '' });
-  
-  // Pagination states
+  const [deleteModal, setDeleteModal] = useState({ show: false, logId: null, visitorName: '' });
+  const [editModal, setEditModal] = useState({ show: false, log: null });
+
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -35,34 +44,14 @@ function VisitorLog() {
     const now = new Date();
     const philippineTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
     return philippineTime.toLocaleDateString('en-US', {
-      month: 'long',
-      day: '2-digit',
-      year: 'numeric'
-    });
-  };
-
-  const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '—';
-    const date = new Date(dateTimeStr);
-    return date.toLocaleString('en-US', {
-      timeZone: 'Asia/Manila',
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+      month: 'long', day: '2-digit', year: 'numeric'
     });
   };
 
   const formatTime = (dateTimeStr) => {
     if (!dateTimeStr) return '—';
-    const date = new Date(dateTimeStr);
-    return date.toLocaleString('en-US', {
-      timeZone: 'Asia/Manila',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+    return new Date(dateTimeStr).toLocaleString('en-US', {
+      timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: true
     });
   };
 
@@ -72,9 +61,9 @@ function VisitorLog() {
   };
 
   const hideBanner = () => {
-    const bannerElement = document.querySelector('.banner-notification');
-    if (bannerElement) {
-      bannerElement.classList.add('fade-out');
+    const el = document.querySelector('.banner-notification');
+    if (el) {
+      el.classList.add('fade-out');
       setTimeout(() => setBanner({ show: false, message: '', type: 'success' }), 300);
     } else {
       setBanner({ show: false, message: '', type: 'success' });
@@ -94,7 +83,6 @@ function VisitorLog() {
 
       if (response.ok) {
         const data = await response.json();
-        // Sort by timeIn descending (most recent first)
         const sorted = data.sort((a, b) => new Date(b.timeIn) - new Date(a.timeIn));
         setVisitLogs(sorted);
         if (isRefresh) showBanner('Records refreshed successfully', 'success');
@@ -110,13 +98,11 @@ function VisitorLog() {
     }
   }, []);
 
-  // Load data on component mount
   useEffect(() => {
     setCurrentDate(getPhilippineDate());
     fetchVisitLogs();
   }, [fetchVisitLogs]);
 
-  // Filter logic
   useEffect(() => {
     let result = [...visitLogs];
 
@@ -133,31 +119,28 @@ function VisitorLog() {
       );
     }
 
-    setFilteredLogs(result);
-    // Reset to first page when filters change
-    setCurrentPage(1);
-  }, [visitLogs, statusFilter, searchTerm]);
+    if (dateFilter) {
+      result = result.filter(log => {
+        if (!log.timeIn) return false;
+        const logDate = new Date(log.timeIn).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+        return logDate === dateFilter;
+      });
+    }
 
-  // Pagination logic - get current page items
+    setFilteredLogs(result);
+    setCurrentPage(1);
+  }, [visitLogs, statusFilter, searchTerm, dateFilter]);
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
-  // Pagination handlers
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  const handleNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
+  const handlePrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleCheckOut = async (logId, visitorName) => {
+  // ── Check Out ──
+  const handleCheckOut = (logId, visitorName) => {
     setConfirmModal({ show: true, logId, visitorName });
   };
 
@@ -175,7 +158,6 @@ function VisitorLog() {
 
       if (response.ok) {
         showBanner('✓ Visitor checked out successfully!', 'success');
-        // Update local state immediately for real-time feel
         setVisitLogs(prev =>
           prev.map(log =>
             log.id === logId
@@ -195,13 +177,55 @@ function VisitorLog() {
     }
   };
 
+  // ── Delete ──
+  const handleDelete = (logId, visitorName) => {
+    setDeleteModal({ show: true, logId, visitorName });
+  };
+
+  const confirmDelete = async () => {
+    const { logId } = deleteModal;
+    setDeleteModal({ show: false, logId: null, visitorName: '' });
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/visit-logs/${logId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        showBanner('✓ Visitor record deleted.', 'success');
+        setVisitLogs(prev => prev.filter(log => log.id !== logId));
+      } else {
+        const error = await response.text();
+        showBanner(error || 'Failed to delete record', 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting:', error);
+      showBanner('Server error. Please try again.', 'error');
+    }
+  };
+
+  // ── Edit ──
+  const handleEdit = (log) => {
+    setEditModal({ show: true, log });
+  };
+
+  const handleEditSave = (updatedLog) => {
+    setVisitLogs(prev =>
+      prev.map(log => log.id === updatedLog.id ? { ...log, ...updatedLog } : log)
+    );
+    setEditModal({ show: false, log: null });
+    showBanner('✓ Visitor updated successfully!', 'success');
+  };
+
   const activeCount = visitLogs.filter(l => l.status === 'ACTIVE').length;
   const completedCount = visitLogs.filter(l => l.status === 'COMPLETED').length;
+  const hasActiveFilters = searchTerm || statusFilter !== 'ALL' || dateFilter;
 
   return (
     <div className="visitor-log-wrapper">
 
-      {/* Banner Notification */}
+      {/* Banner */}
       {banner.show && (
         <div className={`banner-notification ${banner.type}`}>
           <div className="banner-content">
@@ -217,7 +241,7 @@ function VisitorLog() {
         </div>
       )}
 
-      {/* Confirm Modal */}
+      {/* Checkout Confirm Modal */}
       {confirmModal.show && (
         <div className="modal-overlay">
           <div className="modal-card">
@@ -230,10 +254,7 @@ function VisitorLog() {
               This will mark their visit as completed.
             </div>
             <div className="modal-actions">
-              <button
-                className="btn-cancel"
-                onClick={() => setConfirmModal({ show: false, logId: null, visitorName: '' })}
-              >
+              <button className="btn-cancel" onClick={() => setConfirmModal({ show: false, logId: null, visitorName: '' })}>
                 Cancel
               </button>
               <button className="btn-checkout-confirm" onClick={confirmCheckOut}>
@@ -244,6 +265,39 @@ function VisitorLog() {
         </div>
       )}
 
+      {/* Delete Confirm Modal */}
+      {deleteModal.show && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <div className="modal-icon modal-icon-danger">
+              <DeleteForeverOutlinedIcon />
+            </div>
+            <div className="modal-title">Delete Record</div>
+            <div className="modal-message">
+              Are you sure you want to delete the record for <strong>{deleteModal.visitorName}</strong>?
+              This action <strong>cannot be undone</strong>.
+            </div>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setDeleteModal({ show: false, logId: null, visitorName: '' })}>
+                Cancel
+              </button>
+              <button className="btn-delete-confirm" onClick={confirmDelete}>
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editModal.show && (
+        <EditVisitorModal
+          log={editModal.log}
+          onClose={() => setEditModal({ show: false, log: null })}
+          onSave={handleEditSave}
+        />
+      )}
+
       <div className="visitor-log-container">
 
         {/* Page Header */}
@@ -252,11 +306,7 @@ function VisitorLog() {
             <div className="page-title">Visit Logs</div>
             <div className="page-subtitle text-light">Real-time visitor check-in & check-out records</div>
           </div>
-          <button
-            className="btn-refresh"
-            onClick={() => fetchVisitLogs(true)}
-            disabled={refreshing}
-          >
+          <button className="btn-refresh" onClick={() => fetchVisitLogs(true)} disabled={refreshing}>
             <RefreshOutlinedIcon className={`refresh-icon ${refreshing ? 'spinning' : ''}`} />
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -315,6 +365,7 @@ function VisitorLog() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
             <div className="filter-group">
               <FilterListOutlinedIcon className="filter-icon" />
               <select
@@ -326,6 +377,22 @@ function VisitorLog() {
                 <option value="ACTIVE">Active</option>
                 <option value="COMPLETED">Completed</option>
               </select>
+            </div>
+
+            <div className="filter-group date-filter-group">
+              <DateRangeRoundedIcon className="filter-icon" />
+              <input
+                type="date"
+                className="filter-select date-filter-input"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                title="Filter by visit date"
+              />
+              {dateFilter && (
+                <button className="clear-date-btn" onClick={() => setDateFilter('')} title="Clear date filter">
+                  ×
+                </button>
+              )}
             </div>
           </div>
 
@@ -340,8 +407,8 @@ function VisitorLog() {
                 <EventNoteOutlinedIcon className="empty-icon" />
                 <div className="empty-title">No visit records found</div>
                 <div className="empty-subtitle">
-                  {searchTerm || statusFilter !== 'ALL'
-                    ? 'Try adjusting your search or filter'
+                  {hasActiveFilters
+                    ? 'Try adjusting your search, filter, or date'
                     : 'Visit logs will appear here once visitors check in'}
                 </div>
               </div>
@@ -350,43 +417,20 @@ function VisitorLog() {
                 <table className="log-table">
                   <thead>
                     <tr>
-                      <th>
-                        <div className="th-content">
-                          <PersonOutlineIcon className="th-icon" />
-                          Visitor
-                        </div>
-                      </th>
-                      <th>
-                        <div className="th-content">
-                          <AssignmentOutlinedIcon className="th-icon" />
-                          Purpose
-                        </div>
-                      </th>
-                      <th>
-                        <div className="th-content">
-                          <BadgeOutlinedIcon className="th-icon" />
-                          Host
-                        </div>
-                      </th>
-                      <th>
-                        <div className="th-content">
-                          <AccessTimeOutlinedIcon className="th-icon" />
-                          Time In
-                        </div>
-                      </th>
-                      <th>
-                        <div className="th-content">
-                          <AccessTimeOutlinedIcon className="th-icon" />
-                          Time Out
-                        </div>
-                      </th>
-                      <th>Status</th>
-                      <th>Action</th>
+                      <th><div className="th-content"><PersonOutlineIcon className="th-icon" />Visitor</div></th>
+                      <th><div className="th-content"><AssignmentOutlinedIcon className="th-icon" />Purpose</div></th>
+                      <th><div className="th-content"><BadgeOutlinedIcon className="th-icon" />Host</div></th>
+                      <th><div className="th-content"><AccessTimeOutlinedIcon className="th-icon" />Time In</div></th>
+                      <th><div className="th-content"><AccessTimeOutlinedIcon className="th-icon" />Time Out</div></th>
+                      <th className="th-center">Status</th>
+                      <th className="th-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentItems.map((log) => (
                       <tr key={log.id} className={`log-row ${log.status === 'ACTIVE' ? 'row-active' : ''}`}>
+
+                        {/* Visitor */}
                         <td>
                           <div className="visitor-cell">
                             <div className="visitor-avatar">
@@ -398,34 +442,24 @@ function VisitorLog() {
                             </div>
                           </div>
                         </td>
-                        <td>
-                          <span className="purpose-badge">{log.purposeName || '—'}</span>
-                        </td>
-                        <td>
-                          <span className="host-name">{log.hostName || '—'}</span>
-                        </td>
+
+                        {/* Purpose */}
+                        <td><span className="purpose-badge">{log.purposeName || '—'}</span></td>
+
+                        {/* Host */}
+                        <td><span className="host-name">{log.hostName || '—'}</span></td>
+
+                        {/* Time In */}
                         <td>
                           <div className="time-cell">
                             <span className="time-value">{formatTime(log.timeIn)}</span>
-                            <span className="time-date">{log.timeIn ? new Date(log.timeIn).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) : ''}</span>
+                            <span className="time-date">
+                              {log.timeIn ? new Date(log.timeIn).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) : ''}
+                            </span>
                           </div>
                         </td>
-                        <td>
-                          {log.timeOut ? (
-                            <div className="time-cell">
-                              <span className="time-value">{formatTime(log.timeOut)}</span>
-                              <span className="time-date">{new Date(log.timeOut).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
-                            </div>
-                          ) : (
-                            <span className="time-pending">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`status-badge ${log.status === 'ACTIVE' ? 'status-active' : 'status-completed'}`}>
-                            <span className="status-dot"></span>
-                            {log.status === 'ACTIVE' ? 'Active' : 'Completed'}
-                          </span>
-                        </td>
+
+                        {/* Time Out — Check Out button if ACTIVE, actual time if COMPLETED */}
                         <td>
                           {log.status === 'ACTIVE' ? (
                             <button
@@ -436,13 +470,46 @@ function VisitorLog() {
                               <LogoutOutlinedIcon className="checkout-icon" />
                               {checkingOut === log.id ? 'Checking...' : 'Check Out'}
                             </button>
+                          ) : log.timeOut ? (
+                            <div className="time-cell">
+                              <span className="time-value">{formatTime(log.timeOut)}</span>
+                              <span className="time-date">
+                                {new Date(log.timeOut).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                              </span>
+                            </div>
                           ) : (
-                            <span className="checked-out-label">
-                              <CheckCircleOutlineOutlinedIcon className="checked-icon" />
-                              Done
-                            </span>
+                            <span className="time-pending">—</span>
                           )}
                         </td>
+
+                        {/* Status */}
+                        <td className="td-center">
+                          <span className={`status-badge ${log.status === 'ACTIVE' ? 'status-active' : 'status-completed'}`}>
+                            <span className="status-dot"></span>
+                            {log.status === 'ACTIVE' ? 'Active' : 'Completed'}
+                          </span>
+                        </td>
+
+                        {/* Action — Edit + Delete */}
+                        <td className="td-center">
+                          <div className="action-btn-group">
+                            <button
+                              className="btn-action btn-edit"
+                              onClick={() => handleEdit(log)}
+                              title="Edit visitor"
+                            >
+                              <EditOutlinedIcon className="action-icon" />
+                            </button>
+                            <button
+                              className="btn-action btn-delete"
+                              onClick={() => handleDelete(log.id, log.visitorName)}
+                              title="Delete record"
+                            >
+                              <DeleteOutlineOutlinedIcon className="action-icon" />
+                            </button>
+                          </div>
+                        </td>
+
                       </tr>
                     ))}
                   </tbody>
@@ -451,42 +518,25 @@ function VisitorLog() {
             )}
           </div>
 
-          {/* Updated Table Footer with Pagination */}
+          {/* Table Footer */}
           {!loading && filteredLogs.length > 0 && (
             <div className="table-footer">
               <div className="footer-left">
-                Showing <strong>{Math.min(indexOfLastItem, filteredLogs.length)}</strong> of <strong>{filteredLogs.length}</strong> records
-                {(searchTerm || statusFilter !== 'ALL') && (
-                  <button
-                    className="clear-filters"
-                    onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}
-                  >
+                Showing <strong>{Math.min(indexOfLastItem, filteredLogs.length)}</strong> of{' '}
+                <strong>{filteredLogs.length}</strong> records
+                {hasActiveFilters && (
+                  <button className="clear-filters" onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); setDateFilter(''); }}>
                     Clear filters ×
                   </button>
                 )}
               </div>
-              
               <div className="footer-right">
-                <button
-                  className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                >
-                  <NavigateBeforeIcon className="pagination-icon" />
-                  Back
+                <button className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`} onClick={handlePrevPage} disabled={currentPage === 1}>
+                  <NavigateBeforeIcon className="pagination-icon" />Back
                 </button>
-                
-                <span className="pagination-info">
-                  Page {currentPage} of {totalPages}
-                </span>
-                
-                <button
-                  className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                  <NavigateNextIcon className="pagination-icon" />
+                <span className="pagination-info">Page {currentPage} of {totalPages}</span>
+                <button className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`} onClick={handleNextPage} disabled={currentPage === totalPages}>
+                  Next<NavigateNextIcon className="pagination-icon" />
                 </button>
               </div>
             </div>
@@ -502,9 +552,10 @@ function VisitorLog() {
           <div className="tips-content">
             <ul className="tips-list">
               <li>Click the Refresh button to update visit records</li>
-              <li>Click "Check Out" to mark a visitor as departed</li>
-              <li>Use the search bar to quickly find a specific visitor</li>
-              <li>Navigate through records using the Back/Next buttons</li>
+              <li>Click "Check Out" in the Time Out column to mark a visitor as departed</li>
+              <li>Use the edit icon to update visitor details</li>
+              <li>Use the delete icon to permanently remove a record</li>
+              <li>Use the date picker to filter visitors by a specific date</li>
             </ul>
           </div>
         </div>
