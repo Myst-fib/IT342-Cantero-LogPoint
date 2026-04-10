@@ -12,6 +12,8 @@ import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import RadioButtonUncheckedOutlinedIcon from '@mui/icons-material/RadioButtonUncheckedOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 function VisitorLog() {
   const [visitLogs, setVisitLogs] = useState([]);
@@ -24,6 +26,10 @@ function VisitorLog() {
   const [currentDate, setCurrentDate] = useState('');
   const [checkingOut, setCheckingOut] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ show: false, logId: null, visitorName: '' });
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const getPhilippineDate = () => {
     const now = new Date();
@@ -104,17 +110,10 @@ function VisitorLog() {
     }
   }, []);
 
-  // Auto-refresh every 30 seconds for real-time updates
+  // Load data on component mount
   useEffect(() => {
     setCurrentDate(getPhilippineDate());
     fetchVisitLogs();
-
-    const interval = setInterval(() => {
-      fetchVisitLogs();
-      setCurrentDate(getPhilippineDate());
-    }, 30000);
-
-    return () => clearInterval(interval);
   }, [fetchVisitLogs]);
 
   // Filter logic
@@ -135,7 +134,28 @@ function VisitorLog() {
     }
 
     setFilteredLogs(result);
+    // Reset to first page when filters change
+    setCurrentPage(1);
   }, [visitLogs, statusFilter, searchTerm]);
+
+  // Pagination logic - get current page items
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+
+  // Pagination handlers
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const handleCheckOut = async (logId, visitorName) => {
     setConfirmModal({ show: true, logId, visitorName });
@@ -365,7 +385,7 @@ function VisitorLog() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredLogs.map((log) => (
+                    {currentItems.map((log) => (
                       <tr key={log.id} className={`log-row ${log.status === 'ACTIVE' ? 'row-active' : ''}`}>
                         <td>
                           <div className="visitor-cell">
@@ -431,17 +451,44 @@ function VisitorLog() {
             )}
           </div>
 
+          {/* Updated Table Footer with Pagination */}
           {!loading && filteredLogs.length > 0 && (
             <div className="table-footer">
-              Showing <strong>{filteredLogs.length}</strong> of <strong>{visitLogs.length}</strong> records
-              {(searchTerm || statusFilter !== 'ALL') && (
+              <div className="footer-left">
+                Showing <strong>{Math.min(indexOfLastItem, filteredLogs.length)}</strong> of <strong>{filteredLogs.length}</strong> records
+                {(searchTerm || statusFilter !== 'ALL') && (
+                  <button
+                    className="clear-filters"
+                    onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}
+                  >
+                    Clear filters ×
+                  </button>
+                )}
+              </div>
+              
+              <div className="footer-right">
                 <button
-                  className="clear-filters"
-                  onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}
+                  className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
                 >
-                  Clear filters ×
+                  <NavigateBeforeIcon className="pagination-icon" />
+                  Back
                 </button>
-              )}
+                
+                <span className="pagination-info">
+                  Page {currentPage} of {totalPages}
+                </span>
+                
+                <button
+                  className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <NavigateNextIcon className="pagination-icon" />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -454,9 +501,10 @@ function VisitorLog() {
           </div>
           <div className="tips-content">
             <ul className="tips-list">
-              <li>Records auto-refresh every 30 seconds for real-time updates</li>
+              <li>Click the Refresh button to update visit records</li>
               <li>Click "Check Out" to mark a visitor as departed</li>
               <li>Use the search bar to quickly find a specific visitor</li>
+              <li>Navigate through records using the Back/Next buttons</li>
             </ul>
           </div>
         </div>
