@@ -9,7 +9,6 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
-import QrCodeOutlinedIcon from '@mui/icons-material/QrCodeOutlined';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import RadioButtonUncheckedOutlinedIcon from '@mui/icons-material/RadioButtonUncheckedOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
@@ -131,8 +130,7 @@ function VisitorLog() {
       result = result.filter(log =>
         log.visitorName?.toLowerCase().includes(term) ||
         log.purposeName?.toLowerCase().includes(term) ||
-        log.hostName?.toLowerCase().includes(term) ||
-        log.qrCode?.toLowerCase().includes(term)
+        log.hostName?.toLowerCase().includes(term)
       );
     }
 
@@ -362,12 +360,6 @@ function VisitorLog() {
                           Time Out
                         </div>
                       </th>
-                      <th>
-                        <div className="th-content">
-                          <QrCodeOutlinedIcon className="th-icon" />
-                          QR Code
-                        </div>
-                      </th>
                       <th>Status</th>
                       <th>Action</th>
                     </tr>
@@ -407,9 +399,6 @@ function VisitorLog() {
                           ) : (
                             <span className="time-pending">—</span>
                           )}
-                        </td>
-                        <td>
-                          <span className="qr-code">{log.qrCode || '—'}</span>
                         </td>
                         <td>
                           <span className={`status-badge ${log.status === 'ACTIVE' ? 'status-active' : 'status-completed'}`}>
