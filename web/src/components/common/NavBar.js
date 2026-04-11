@@ -49,7 +49,7 @@ function NavBar() {
     }
   };
 
-  const isAdmin = user?.role?.toLowerCase() === 'office administrators';
+  const isAdmin = user?.role?.toLowerCase() === 'office administrator';
 
   const requestLogout = () => setShowBanner(true);
 

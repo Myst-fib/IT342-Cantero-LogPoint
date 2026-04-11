@@ -29,7 +29,7 @@ function AppLayout() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute requiredRole="office administrators">
+            <ProtectedRoute requiredRole="office administrator">
               <Dashboard />
             </ProtectedRoute>
           }
