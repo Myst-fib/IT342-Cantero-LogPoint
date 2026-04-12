@@ -108,6 +108,11 @@ function AddVisitor() {
       setLoading(false);
       return; 
     }
+    if (!/^\d{11}$/.test(formData.contactNumber.trim())) {
+      showBanner('Contact number must be exactly 11 digits', 'error');
+      setLoading(false);
+      return;
+    }
 
     // Prepare data for backend - Matches VisitorDTO exactly
     const submissionData = {
@@ -287,9 +292,13 @@ function AddVisitor() {
                       type="tel"
                       name="contactNumber"
                       value={formData.contactNumber}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+                        setFormData(prev => ({ ...prev, contactNumber: digits }));
+                      }}
                       className="form-input with-icon"
-                      placeholder="09123456789"
+                      placeholder="09XXXXXXXXX"
+                      maxLength={11}
                       required
                     />
                   </div>
