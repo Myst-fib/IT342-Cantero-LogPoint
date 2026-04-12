@@ -215,7 +215,17 @@ function VisitorLog() {
 
   const handleEditSave = (updatedLog) => {
     setVisitLogs(prev =>
-      prev.map(log => log.id === updatedLog.id ? { ...log, ...updatedLog } : log)
+      prev.map(log =>
+        log.id === updatedLog.id
+          ? {
+              ...log,
+              visitorName: updatedLog.visitorName ?? log.visitorName,
+              purposeName: updatedLog.purposeName ?? log.purposeName,
+              hostName: updatedLog.hostName ?? log.hostName,
+              contactNo: updatedLog.contactNo ?? log.contactNo,
+            }
+          : log
+      )
     );
     setEditModal({ show: false, log: null });
     showBanner('✓ Visitor updated successfully!', 'success');
@@ -493,24 +503,28 @@ function VisitorLog() {
                           </span>
                         </td>
 
-                        {/* Action — Edit + Delete */}
+                        {/* Action — Edit + Delete (only for ACTIVE visits) */}
                         <td className="td-center">
-                          <div className="action-btn-group">
-                            <button
-                              className="btn-action btn-edit"
-                              onClick={() => handleEdit(log)}
-                              title="Edit visitor"
-                            >
-                              <EditOutlinedIcon className="action-icon" />
-                            </button>
-                            <button
-                              className="btn-action btn-delete"
-                              onClick={() => handleDelete(log.id, log.visitorName)}
-                              title="Delete record"
-                            >
-                              <DeleteOutlineOutlinedIcon className="action-icon" />
-                            </button>
-                          </div>
+                          {log.status === 'ACTIVE' ? (
+                            <div className="action-btn-group">
+                              <button
+                                className="btn-action btn-edit"
+                                onClick={() => handleEdit(log)}
+                                title="Edit visitor"
+                              >
+                                <EditOutlinedIcon className="action-icon" />
+                              </button>
+                              <button
+                                className="btn-action btn-delete"
+                                onClick={() => handleDelete(log.id, log.visitorName)}
+                                title="Delete record"
+                              >
+                                <DeleteOutlineOutlinedIcon className="action-icon" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="action-locked" title="Record is finalized">—</span>
+                          )}
                         </td>
 
                       </tr>

@@ -51,6 +51,7 @@ function EditVisitorModal({ log, onClose, onSave }) {
     if (formData.purpose === 'Other' && !formData.otherPurpose.trim()) return setError('Please specify the purpose.');
     if (!formData.host.trim()) return setError('Host name is required.');
     if (!formData.contactNo.trim()) return setError('Contact number is required.');
+    if (!/^\d{11}$/.test(formData.contactNo.trim())) return setError('Contact number must be exactly 11 digits.');
 
     setLoading(true);
     setError('');
@@ -76,7 +77,14 @@ function EditVisitorModal({ log, onClose, onSave }) {
 
       if (response.ok) {
         const updated = await response.json();
-        onSave(updated);
+        // Remap backend field names to the keys used in VisitorLog state
+        onSave({
+          id: log.id,
+          visitorName: updated.visitorName ?? formData.visitorName,
+          purposeName: updated.purposeName ?? (formData.purpose === 'Other' ? formData.otherPurpose : formData.purpose),
+          hostName: updated.hostName ?? formData.host,
+          contactNo: updated.contactNo ?? formData.contactNo,
+        });
       } else {
         const errorText = await response.text();
         console.error('Server error:', errorText);
@@ -183,9 +191,14 @@ function EditVisitorModal({ log, onClose, onSave }) {
                   type="tel"
                   name="contactNo"
                   value={formData.contactNo}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+                    setFormData(prev => ({ ...prev, contactNo: digits }));
+                    setError('');
+                  }}
                   className="form-input with-icon"
-                  placeholder="+63 9XX XXX XXXX"
+                  placeholder="09XXXXXXXXX"
+                  maxLength={11}
                 />
               </div>
             </div>
