@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import '../../styles/NavBar.css';
 import logo from '../assets/logpoint_logo.png';
@@ -8,6 +8,11 @@ function NavBar() {
   const [showBanner, setShowBanner] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Sync notification state (security guard only)
+  const [syncRequest, setSyncRequest] = useState(null); // null | { requestedByName, status }
+  const [showSyncNotif, setShowSyncNotif] = useState(false);
+  const [respondingSync, setRespondingSync] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -49,7 +54,54 @@ function NavBar() {
     }
   };
 
+  // Poll for sync requests — security guard only
+  const pollSyncRequest = useCallback(async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/sync/my-request', {
+        credentials: 'include',
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.status === 'PENDING') {
+        setSyncRequest(data);
+        setShowSyncNotif(true);
+      } else {
+        // If no pending request, hide notification
+        setSyncRequest(null);
+      }
+    } catch {
+      // silent
+    }
+  }, []);
+
+  useEffect(() => {
+    const isGuard = user?.role?.toLowerCase() === 'security guard';
+    if (!isGuard) return;
+    pollSyncRequest();
+    const interval = setInterval(pollSyncRequest, 5000);
+    return () => clearInterval(interval);
+  }, [user, pollSyncRequest]);
+
+  const handleSyncRespond = async (decision) => {
+    setRespondingSync(true);
+    try {
+      await fetch('http://localhost:8080/api/sync/respond', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision }),
+      });
+      setSyncRequest(null);
+      setShowSyncNotif(false);
+    } catch {
+      // silent
+    } finally {
+      setRespondingSync(false);
+    }
+  };
+
   const isAdmin = user?.role?.toLowerCase() === 'office administrator';
+  const isGuard = user?.role?.toLowerCase() === 'security guard';
 
   const requestLogout = () => setShowBanner(true);
 
@@ -154,6 +206,21 @@ function NavBar() {
 
           <div className="nav-label" style={{ marginTop: '16px' }}>Account</div>
 
+          {/* Sync Notification Bell — security guard only */}
+          {isGuard && (
+            <button
+              className={`nav-item nav-item-btn ${showSyncNotif && syncRequest ? 'notif-active' : ''}`}
+              onClick={() => setShowSyncNotif(true)}
+            >
+              <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              Notifications
+              {syncRequest && <span className="notif-badge">1</span>}
+            </button>
+          )}
+
           {/* Profile — all roles */}
           <NavLink
             to="/profile"
@@ -193,6 +260,69 @@ function NavBar() {
               <button className="btn-sm btn-outline" onClick={cancelLogout}>Cancel</button>
               <button className="btn-sm btn-primary" onClick={confirmLogout}>Yes, logout</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sync Request Notification — security guard only */}
+      {isGuard && showSyncNotif && (
+        <div className="sync-notif-overlay" onClick={(e) => e.target === e.currentTarget && setShowSyncNotif(false)}>
+          <div className="sync-notif-modal">
+
+            {/* X button — closes modal only, request stays pending */}
+            <button
+              className="sync-notif-dismiss"
+              onClick={() => setShowSyncNotif(false)}
+              title="Dismiss (request stays pending)"
+            >
+              ×
+            </button>
+
+            <div className="sync-notif-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sync-notif-bell">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </div>
+
+            {syncRequest ? (
+              <>
+                <div className="sync-notif-title">Sync Request</div>
+                <div className="sync-notif-body">
+                  <strong>{syncRequest.requestedByName || 'An administrator'}</strong> is requesting to collect your visitor log data.
+                </div>
+                <div className="sync-notif-sub">
+                  Do you want to share your logs with the admin?
+                </div>
+                <div className="sync-notif-actions">
+                  <button
+                    className="sync-notif-btn decline"
+                    onClick={() => handleSyncRespond('DECLINED')}
+                    disabled={respondingSync}
+                  >
+                    Decline
+                  </button>
+                  <button
+                    className="sync-notif-btn accept"
+                    onClick={() => handleSyncRespond('ACCEPTED')}
+                    disabled={respondingSync}
+                  >
+                    {respondingSync ? 'Processing…' : 'Accept'}
+                  </button>
+                </div>
+                <div className="sync-notif-dismiss-hint">
+                  Closing this window will not dismiss the request.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="sync-notif-title">Notifications</div>
+                <div className="sync-notif-empty">No pending sync requests.</div>
+                <div className="sync-notif-actions">
+                  <button className="sync-notif-btn decline" onClick={() => setShowSyncNotif(false)}>Close</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

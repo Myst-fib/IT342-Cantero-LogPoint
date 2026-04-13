@@ -31,7 +31,16 @@ function VisitorLog() {
   const [currentDate, setCurrentDate] = useState('');
   const [checkingOut, setCheckingOut] = useState(null);
 
-  // Modals
+  // Synced guard logs from localStorage
+  const [syncedGuard, setSyncedGuard] = useState(() => {
+    try {
+      const saved = localStorage.getItem('logpoint_synced_guard');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [showSyncedOnly, setShowSyncedOnly] = useState(false);
+
+  // Modal states
   const [confirmModal, setConfirmModal] = useState({ show: false, logId: null, visitorName: '' });
   const [deleteModal, setDeleteModal] = useState({ show: false, logId: null, visitorName: '' });
   const [editModal, setEditModal] = useState({ show: false, log: null });
@@ -39,6 +48,30 @@ function VisitorLog() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+
+  // Live poll: refresh synced guard logs every 10s
+  useEffect(() => {
+    if (!syncedGuard?.guardId) return;
+    const gId = syncedGuard.guardId;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/sync/live/${gId}`, {
+          credentials: 'include',
+        });
+        if (!res.ok) return;
+        const freshLogs = await res.json();
+        const updated = { ...syncedGuard, logs: freshLogs };
+        setSyncedGuard(updated);
+        localStorage.setItem('logpoint_synced_guard', JSON.stringify(updated));
+      } catch {
+        // silent
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncedGuard?.guardId]);
 
   const getPhilippineDate = () => {
     const now = new Date();
@@ -105,7 +138,19 @@ function VisitorLog() {
   }, [fetchVisitLogs]);
 
   useEffect(() => {
-    let result = [...visitLogs];
+    // Merge own logs with synced guard logs (tagged with syncedFrom)
+    const ownLogs = visitLogs.map(l => ({ ...l, syncedFrom: null }));
+    const guardLogsTagged = syncedGuard
+      ? syncedGuard.logs.map(l => ({
+          ...l,
+          id: `synced-${l.id}`,
+          syncedFrom: `${syncedGuard.guard?.firstName || ''} ${syncedGuard.guard?.lastName || ''}`.trim(),
+        }))
+      : [];
+
+    let result = showSyncedOnly
+      ? guardLogsTagged
+      : [...ownLogs, ...guardLogsTagged];
 
     if (statusFilter !== 'ALL') {
       result = result.filter(log => log.status === statusFilter);
@@ -116,7 +161,8 @@ function VisitorLog() {
       result = result.filter(log =>
         log.visitorName?.toLowerCase().includes(term) ||
         log.purposeName?.toLowerCase().includes(term) ||
-        log.hostName?.toLowerCase().includes(term)
+        log.hostName?.toLowerCase().includes(term) ||
+        log.syncedFrom?.toLowerCase().includes(term)
       );
     }
 
@@ -128,9 +174,11 @@ function VisitorLog() {
       });
     }
 
+    result.sort((a, b) => new Date(b.timeIn) - new Date(a.timeIn));
+
     setFilteredLogs(result);
     setCurrentPage(1);
-  }, [visitLogs, statusFilter, searchTerm, dateFilter]);
+  }, [visitLogs, statusFilter, searchTerm, dateFilter, syncedGuard, showSyncedOnly]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -140,7 +188,7 @@ function VisitorLog() {
   const handleNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
   const handlePrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
 
-  // ── Check Out ──
+  // Check Out
   const handleCheckOut = (logId, visitorName) => {
     setConfirmModal({ show: true, logId, visitorName });
   };
@@ -178,7 +226,7 @@ function VisitorLog() {
     }
   };
 
-  // ── Delete ──
+  // Delete
   const handleDelete = (logId, visitorName) => {
     setDeleteModal({ show: true, logId, visitorName });
   };
@@ -206,9 +254,8 @@ function VisitorLog() {
     }
   };
 
-  // ── Edit ──
+  // Edit
   const handleEdit = (log) => {
-    // Make sure log.id is the actual database ID
     console.log('Editing visitor with ID:', log.id);
     setEditModal({ show: true, log });
   };
@@ -324,6 +371,41 @@ function VisitorLog() {
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </button>
         </div>
+
+        {/* Synced guard banner */}
+        {syncedGuard && (
+          <div className="synced-guard-banner">
+            <div className="synced-guard-banner-left">
+              <span className="synced-guard-dot" />
+              <span>
+                Showing synced logs from&nbsp;
+                <strong>{syncedGuard.guard?.firstName} {syncedGuard.guard?.lastName}</strong>
+                &nbsp;·&nbsp;{syncedGuard.logs.length} record{syncedGuard.logs.length !== 1 ? 's' : ''}
+              </span>
+              <button
+                className={`synced-filter-btn ${showSyncedOnly ? 'active' : ''}`}
+                onClick={() => setShowSyncedOnly(v => !v)}
+              >
+                {showSyncedOnly ? 'Show All' : 'Show Guard Only'}
+              </button>
+            </div>
+            <button
+              className="synced-guard-clear"
+              onClick={() => {
+                if (syncedGuard?.guardId) {
+                  fetch(`http://localhost:8080/api/sync/deactivate/${syncedGuard.guardId}`, {
+                    method: 'POST', credentials: 'include',
+                  }).catch(() => {});
+                }
+                setSyncedGuard(null);
+                setShowSyncedOnly(false);
+                localStorage.removeItem('logpoint_synced_guard');
+              }}
+            >
+              × Clear synced data
+            </button>
+          </div>
+        )}
 
         {/* Stats Row */}
         <div className="stats-row">
@@ -442,27 +524,24 @@ function VisitorLog() {
                   <tbody>
                     {currentItems.map((log) => (
                       <tr key={log.id} className={`log-row ${log.status === 'ACTIVE' ? 'row-active' : ''}`}>
-
-                        {/* Visitor */}
                         <td>
                           <div className="visitor-cell">
-                            <div className="visitor-avatar">
+                            <div className={`visitor-avatar ${log.syncedFrom ? 'avatar-synced' : ''}`}>
                               {log.visitorName?.charAt(0).toUpperCase() || '?'}
                             </div>
                             <div className="visitor-info">
                               <div className="visitor-name">{log.visitorName || '—'}</div>
                               <div className="visitor-id">{log.contactNo || '—'}</div>
+                              {log.syncedFrom && (
+                                <div className="synced-from-tag">
+                                  ⇄ {log.syncedFrom}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
-
-                        {/* Purpose */}
                         <td><span className="purpose-badge">{log.purposeName || '—'}</span></td>
-
-                        {/* Host */}
                         <td><span className="host-name">{log.hostName || '—'}</span></td>
-
-                        {/* Time In */}
                         <td>
                           <div className="time-cell">
                             <span className="time-value">{formatTime(log.timeIn)}</span>
@@ -471,10 +550,15 @@ function VisitorLog() {
                             </span>
                           </div>
                         </td>
-
-                        {/* Time Out — Check Out button if ACTIVE, actual time if COMPLETED */}
                         <td>
-                          {log.status === 'ACTIVE' ? (
+                          {log.syncedFrom ? (
+                            log.timeOut ? (
+                              <div className="time-cell">
+                                <span className="time-value">{formatTime(log.timeOut)}</span>
+                                <span className="time-date">{new Date(log.timeOut).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
+                              </div>
+                            ) : <span className="time-pending">—</span>
+                          ) : log.status === 'ACTIVE' ? (
                             <button
                               className="btn-checkout"
                               onClick={() => handleCheckOut(log.id, log.visitorName)}
@@ -486,39 +570,27 @@ function VisitorLog() {
                           ) : log.timeOut ? (
                             <div className="time-cell">
                               <span className="time-value">{formatTime(log.timeOut)}</span>
-                              <span className="time-date">
-                                {new Date(log.timeOut).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
-                              </span>
+                              <span className="time-date">{new Date(log.timeOut).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}</span>
                             </div>
                           ) : (
                             <span className="time-pending">—</span>
                           )}
                         </td>
-
-                        {/* Status */}
                         <td className="td-center">
                           <span className={`status-badge ${log.status === 'ACTIVE' ? 'status-active' : 'status-completed'}`}>
                             <span className="status-dot"></span>
                             {log.status === 'ACTIVE' ? 'Active' : 'Completed'}
                           </span>
                         </td>
-
-                        {/* Action — Edit + Delete (only for ACTIVE visits) */}
                         <td className="td-center">
-                          {log.status === 'ACTIVE' ? (
+                          {log.syncedFrom ? (
+                            <span className="action-locked synced-lock-label" title="Read-only synced record">Synced</span>
+                          ) : log.status === 'ACTIVE' ? (
                             <div className="action-btn-group">
-                              <button
-                                className="btn-action btn-edit"
-                                onClick={() => handleEdit(log)}
-                                title="Edit visitor"
-                              >
+                              <button className="btn-action btn-edit" onClick={() => handleEdit(log)} title="Edit visitor">
                                 <EditOutlinedIcon className="action-icon" />
                               </button>
-                              <button
-                                className="btn-action btn-delete"
-                                onClick={() => handleDelete(log.id, log.visitorName)}
-                                title="Delete record"
-                              >
+                              <button className="btn-action btn-delete" onClick={() => handleDelete(log.id, log.visitorName)} title="Delete record">
                                 <DeleteOutlineOutlinedIcon className="action-icon" />
                               </button>
                             </div>
@@ -526,7 +598,6 @@ function VisitorLog() {
                             <span className="action-locked" title="Record is finalized">—</span>
                           )}
                         </td>
-
                       </tr>
                     ))}
                   </tbody>

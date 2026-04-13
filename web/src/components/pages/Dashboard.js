@@ -9,10 +9,11 @@ import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import RadioButtonUncheckedOutlinedIcon from '@mui/icons-material/RadioButtonUncheckedOutlined';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
-import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import PieChartOutlineOutlinedIcon from '@mui/icons-material/PieChartOutlineOutlined';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import SyncIcon from '@mui/icons-material/Sync';
+import SyncGuardModal from '../features/SyncGuardModal';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -60,6 +61,17 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [banner, setBanner] = useState({ show: false, message: '', type: 'success' });
   const [currentDate, setCurrentDate] = useState('');
+  const [showSyncModal, setShowSyncModal] = useState(false);
+
+  // Load persisted synced data from localStorage so it survives navigation
+  const loadSynced = () => {
+    try {
+      const saved = localStorage.getItem('logpoint_synced_guard');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  };
+  const [syncedLogs, setSyncedLogs] = useState(loadSynced);
+  const [guardLogs, setGuardLogs] = useState(loadSynced);
 
   const getPhilippineDate = () => {
     const now = new Date();
@@ -277,22 +289,57 @@ const Dashboard = () => {
     ]
   };
 
-  const monthlyChartData = {
-    labels: stats.monthlyData.map(d => d.month),
-    datasets: [
-      {
-        label: 'Visitors',
-        data: stats.monthlyData.map(d => d.count),
-        backgroundColor: stats.monthlyData.map(d =>
-          d.isCurrent ? 'rgba(0, 74, 173, 1)' : 'rgba(0, 74, 173, 0.45)'
-        ),
-        borderRadius: 6,
-        borderSkipped: false,
-        borderWidth: 0,
-      }
-    ]
-  };
+  // ── Merged guard logs chart (replaces hourly traffic after sync) ──────────
+  const buildMergedChartData = () => {
+    if (!guardLogs) return null;
 
+    // Admin's own hourly counts
+    const adminHourly = Array(24).fill(0);
+    stats.hourlyTraffic.forEach(h => { adminHourly[h.hour] = h.count; });
+
+    // Guard's hourly counts from synced logs
+    const guardHourly = Array(24).fill(0);
+    guardLogs.logs.forEach(log => {
+      if (log.timeIn) {
+        const hr = new Date(log.timeIn).getHours();
+        guardHourly[hr] = (guardHourly[hr] || 0) + 1;
+      }
+    });
+
+    const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'My Logs',
+          data: adminHourly,
+          borderColor: 'rgba(0, 74, 173, 1)',
+          backgroundColor: 'rgba(0, 74, 173, 0.08)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: 'rgba(0, 74, 173, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        },
+        {
+          label: `${guardLogs.guard?.firstName || 'Guard'}'s Logs`,
+          data: guardHourly,
+          borderColor: 'rgba(126, 217, 87, 1)',
+          backgroundColor: 'rgba(126, 217, 87, 0.08)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: 'rgba(126, 217, 87, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        },
+      ],
+    };
+  };
   const baseChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -320,6 +367,37 @@ const Dashboard = () => {
       },
     },
   };
+  
+  const mergedChartData = buildMergedChartData();
+  const mergedChartOptions = {
+    ...baseChartOptions,
+    plugins: {
+      ...baseChartOptions.plugins,
+      legend: {
+        display: true,
+        position: 'top',
+        labels: { boxWidth: 12, padding: 16, font: { size: 12 } },
+      },
+    },
+  };
+
+  const monthlyChartData = {
+    labels: stats.monthlyData.map(d => d.month),
+    datasets: [
+      {
+        label: 'Visitors',
+        data: stats.monthlyData.map(d => d.count),
+        backgroundColor: stats.monthlyData.map(d =>
+          d.isCurrent ? 'rgba(0, 74, 173, 1)' : 'rgba(0, 74, 173, 0.45)'
+        ),
+        borderRadius: 6,
+        borderSkipped: false,
+        borderWidth: 0,
+      }
+    ]
+  };
+
+  
 
   const monthlyChartOptions = {
     ...baseChartOptions,
@@ -365,6 +443,61 @@ const Dashboard = () => {
     },
   };
 
+  const handleSyncComplete = (logs, guard, guardId) => {
+    // logs=null means guard was deactivated
+    if (!logs) {
+      handleClearGuardLogs(guardId);
+      return;
+    }
+    const payload = { logs, guard, guardId };
+    setSyncedLogs(payload);
+    setGuardLogs(payload);
+    localStorage.setItem('logpoint_synced_guard', JSON.stringify(payload));
+    setShowSyncModal(false);
+    showBanner(`Successfully synced ${logs.length} log(s) from ${guard.firstName} ${guard.lastName}`, 'success');
+  };
+
+  const handleClearGuardLogs = (guardId) => {
+    setGuardLogs(null);
+    setSyncedLogs(null);
+    localStorage.removeItem('logpoint_synced_guard');
+    // Deactivate on backend if we have a guardId
+    if (guardId) {
+      fetch(`http://localhost:8080/api/sync/deactivate/${guardId}`, {
+        method: 'POST', credentials: 'include',
+      }).catch(() => {});
+    }
+  };
+
+  // Live poll: re-fetch guard logs every 10s while a sync is active
+  useEffect(() => {
+    const saved = localStorage.getItem('logpoint_synced_guard');
+    if (!saved) return;
+    let parsed;
+    try { parsed = JSON.parse(saved); } catch { return; }
+    const gId = parsed?.guardId;
+    if (!gId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/sync/live/${gId}`, {
+          credentials: 'include',
+        });
+        if (!res.ok) return;
+        const freshLogs = await res.json();
+        const payload = { logs: freshLogs, guard: parsed.guard, guardId: gId };
+        setGuardLogs(payload);
+        setSyncedLogs(payload);
+        localStorage.setItem('logpoint_synced_guard', JSON.stringify(payload));
+      } catch {
+        // silent — keep trying
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Derived monthly footer values ─────────────────────────────────────────
   const momPositive = stats.momGrowth !== null && stats.momGrowth >= 0;
   const momLabel = stats.momGrowth !== null
@@ -397,10 +530,10 @@ const Dashboard = () => {
             <div className="page-subtitle text-light">{currentDate}</div>
           </div>
           <div className="header-actions">
-            <Link className="btn-view-all" to="/visitor-log">
-              <AssessmentOutlinedIcon className="btn-icon" />
-              View All Records
-            </Link>
+            <button className="btn-view-all" onClick={() => setShowSyncModal(true)}>
+              <SyncIcon className="btn-icon" />
+              Sync Guard Logs
+            </button>
             <Link className="btn-add" to="/add-visitor">
               <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Add Visitor
             </Link>
@@ -509,17 +642,37 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Hourly Traffic */}
+              {/* Hourly Traffic / Merged Guard Logs */}
               <div className="chart-card full-width">
                 <div className="chart-header">
                   <div className="chart-title">
                     <AccessTimeOutlinedIcon className="chart-icon" />
-                    Hourly Traffic (24h)
+                    {guardLogs
+                      ? `Merged Logs — You & ${guardLogs.guard?.firstName || 'Guard'} (24h)`
+                      : 'Hourly Traffic (24h)'}
                   </div>
+                  {guardLogs && (
+                    <button
+                      className="chart-clear-btn"
+                      onClick={() => handleClearGuardLogs(guardLogs.guardId)}
+                      title="Clear synced guard data"
+                    >
+                      × Clear guard data
+                    </button>
+                  )}
                 </div>
                 <div className="chart-body">
-                  <Line data={hourlyChartData} options={baseChartOptions} />
+                  <Line
+                    data={guardLogs ? mergedChartData : hourlyChartData}
+                    options={guardLogs ? mergedChartOptions : baseChartOptions}
+                  />
                 </div>
+                {guardLogs && (
+                  <div className="chart-sync-badge">
+                    <SyncIcon style={{ fontSize: 13 }} />
+                    Synced from {guardLogs.guard?.firstName} {guardLogs.guard?.lastName} — {guardLogs.logs.length} record{guardLogs.logs.length !== 1 ? 's' : ''}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -625,6 +778,40 @@ const Dashboard = () => {
           </>
         )}
       </div>
+
+      {/* Sync Guard Modal */}
+      {showSyncModal && (
+        <SyncGuardModal
+          onClose={() => setShowSyncModal(false)}
+          onSyncComplete={handleSyncComplete}
+        />
+      )}
+
+      {/* Synced logs preview panel */}
+      {syncedLogs && (
+        <div className="synced-panel">
+          <div className="synced-panel-header">
+            <SyncIcon className="synced-panel-icon" />
+            <span>
+              Synced <strong>{syncedLogs.logs.length}</strong> log(s) from{' '}
+              <strong>{syncedLogs.guard.firstName} {syncedLogs.guard.lastName}</strong>
+            </span>
+            <button className="synced-panel-close" onClick={() => setSyncedLogs(null)}>×</button>
+          </div>
+          <div className="synced-panel-list">
+            {syncedLogs.logs.slice(0, 5).map(log => (
+              <div key={log.id} className="synced-log-row">
+                <span className="synced-log-name">{log.visitorName || `Visitor #${log.visitorId}`}</span>
+                <span className="synced-log-purpose">{log.purposeName || '—'}</span>
+                <span className={`synced-log-status ${log.status?.toLowerCase()}`}>{log.status}</span>
+              </div>
+            ))}
+            {syncedLogs.logs.length > 5 && (
+              <div className="synced-log-more">+{syncedLogs.logs.length - 5} more records</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* FAB */}
       <Link className="fab" to="/add-visitor">+</Link>

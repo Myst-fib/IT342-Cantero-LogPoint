@@ -1300,3 +1300,106 @@
   .edit-modal-card { width: 95%; max-height: 95vh; }
   .action-btn-group { gap: 4px; }
 }
+/* ===== SYNCED GUARD DATA ===== */
+
+/* Banner below page header */
+.synced-guard-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(0, 74, 173, 0.05);
+  border: 1px solid rgba(0, 74, 173, 0.15);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: var(--text-dark);
+  flex-wrap: wrap;
+}
+
+.synced-guard-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.synced-guard-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-dark);
+  flex-shrink: 0;
+  animation: notif-pulse 2s ease-in-out infinite;
+}
+
+.synced-filter-btn {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--primary-dark);
+  background: transparent;
+  color: var(--primary-dark);
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.synced-filter-btn:hover,
+.synced-filter-btn.active {
+  background: var(--primary-dark);
+  color: white;
+}
+
+.synced-guard-clear {
+  background: none;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+}
+
+.synced-guard-clear:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(229, 57, 53, 0.04);
+}
+
+/* Synced tag below visitor name in table */
+.synced-from-tag {
+  font-size: 11px;
+  color: var(--primary-dark);
+  font-weight: 600;
+  margin-top: 3px;
+  background: rgba(0, 74, 173, 0.08);
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 20px;
+}
+
+/* Avatar style for synced rows */
+.visitor-avatar.avatar-synced {
+  background: linear-gradient(135deg, #1d9e75, #7ed957);
+}
+
+/* Synced lock label in Actions column */
+.synced-lock-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  background: rgba(0, 74, 173, 0.08);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* Highlight synced rows subtly */
+.log-row:has(.synced-from-tag) {
+  background: rgba(0, 74, 173, 0.02);
+}
