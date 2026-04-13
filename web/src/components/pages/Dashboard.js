@@ -62,16 +62,12 @@ const Dashboard = () => {
   const [banner, setBanner] = useState({ show: false, message: '', type: 'success' });
   const [currentDate, setCurrentDate] = useState('');
   const [showSyncModal, setShowSyncModal] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [visitLogs, setVisitLogs] = useState([]);
 
-  // Load persisted synced data from localStorage so it survives navigation
-  const loadSynced = () => {
-    try {
-      const saved = localStorage.getItem('logpoint_synced_guard');
-      return saved ? JSON.parse(saved) : null;
-    } catch { return null; }
-  };
-  const [syncedLogs, setSyncedLogs] = useState(loadSynced);
-  const [guardLogs, setGuardLogs] = useState(loadSynced);
+  // Synced logs: guardId → logs[]
+  const [syncedLogs, setSyncedLogs] = useState({});  // { [guardId]: logs[] }
+  const [syncedGuards, setSyncedGuards] = useState({});  // { [guardId]: guard }
 
   const getPhilippineDate = () => {
     const now = new Date();
@@ -97,6 +93,20 @@ const Dashboard = () => {
     } else {
       setBanner({ show: false, message: '', type: 'success' });
     }
+  };
+
+  /**
+   * Merges admin's own visit logs with all synced guard logs.
+   * Each synced log gets a `syncedFrom` tag so the table can badge it.
+   * Call this wherever you currently render/count `visitLogs`.
+   */
+  const getMergedLogs = (ownLogs, syncedLogsMap) => {
+    const guardLogs = Object.entries(syncedLogsMap).flatMap(([, logs]) =>
+      logs.map(l => ({ ...l, syncedFrom: l.syncedFrom || 'Guard' }))
+    );
+    return [...(ownLogs || []), ...guardLogs].sort(
+      (a, b) => new Date(b.timeIn) - new Date(a.timeIn)
+    );
   };
 
   const calculateStats = (logs) => {
@@ -209,6 +219,55 @@ const Dashboard = () => {
     });
   };
 
+  /**
+   * Called by SyncGuardModal whenever:
+   *   • Initial collection completes   → logs=array,  isCancelled=false
+   *   • Live poll fires (10 s refresh) → logs=array,  isCancelled=false  (reflects host/purpose edits)
+   *   • Cancel confirmed               → logs=frozen, isCancelled=true   (keeps last snapshot, stops updates)
+   */
+  const handleSyncComplete = (logs, guard, guardId, isCancelled, shouldDelete = false) => {
+    if (!guardId) return;
+
+    if (shouldDelete || (logs === null && !isCancelled)) {
+      // Complete removal (used for "Clear all guard data" button)
+      setSyncedLogs(prev => { const n = { ...prev }; delete n[guardId]; return n; });
+      setSyncedGuards(prev => { const n = { ...prev }; delete n[guardId]; return n; });
+      if (!isCancelled) {
+        showBanner(`Sync data for guard removed.`, 'info');
+      }
+      return;
+    }
+
+      if (isCancelled) {
+      // Cancel: keep existing frozen snapshot, mark as cancelled in state
+      setSyncedLogs(prev => ({ 
+        ...prev, 
+        [guardId]: prev[guardId] || [] // Keep existing logs
+      }));
+      // Don't delete the guard info, just mark it as cancelled (optional)
+      showBanner('Sync cancelled – existing data remains visible.', 'info');
+      return;
+    }
+    if (logs === null) {
+      // Safety wipe
+      setSyncedLogs(prev => { const n = { ...prev }; delete n[guardId]; return n; });
+      setSyncedGuards(prev => { const n = { ...prev }; delete n[guardId]; return n; });
+      return;
+    }
+
+     // New or refreshed data (initial sync or live poll)
+      setSyncedLogs(prev => ({ ...prev, [guardId]: logs }));
+      if (guard) setSyncedGuards(prev => ({ ...prev, [guardId]: guard }));
+
+      const guardName = guard
+        ? `${guard.firstName} ${guard.lastName}`
+        : (syncedGuards[guardId]
+            ? `${syncedGuards[guardId].firstName} ${syncedGuards[guardId].lastName}`
+            : 'Guard');
+
+      showBanner(`Synced ${logs.length} log(s) from ${guardName}`, 'success');
+    };
+
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
@@ -219,7 +278,10 @@ const Dashboard = () => {
       });
       if (logsResponse.ok) {
         const logs = await logsResponse.json();
-        calculateStats(logs);
+        setVisitLogs(logs);
+        // Use merged logs for stats calculation
+        const displayLogs = getMergedLogs(logs, syncedLogs);
+        calculateStats(displayLogs);
       } else {
         showBanner('Failed to fetch dashboard data', 'error');
       }
@@ -230,7 +292,7 @@ const Dashboard = () => {
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [syncedLogs]);
 
   useEffect(() => {
     setCurrentDate(getPhilippineDate());
@@ -291,7 +353,8 @@ const Dashboard = () => {
 
   // ── Merged guard logs chart (replaces hourly traffic after sync) ──────────
   const buildMergedChartData = () => {
-    if (!guardLogs) return null;
+    const allSyncedLogs = Object.values(syncedLogs).flat();
+    if (allSyncedLogs.length === 0) return null;
 
     // Admin's own hourly counts
     const adminHourly = Array(24).fill(0);
@@ -299,7 +362,7 @@ const Dashboard = () => {
 
     // Guard's hourly counts from synced logs
     const guardHourly = Array(24).fill(0);
-    guardLogs.logs.forEach(log => {
+    allSyncedLogs.forEach(log => {
       if (log.timeIn) {
         const hr = new Date(log.timeIn).getHours();
         guardHourly[hr] = (guardHourly[hr] || 0) + 1;
@@ -307,6 +370,9 @@ const Dashboard = () => {
     });
 
     const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+
+    // Get guard names for legend
+    const guardNames = Object.values(syncedGuards).map(g => `${g.firstName} ${g.lastName}`).join(', ');
 
     return {
       labels,
@@ -325,7 +391,7 @@ const Dashboard = () => {
           pointHoverRadius: 5,
         },
         {
-          label: `${guardLogs.guard?.firstName || 'Guard'}'s Logs`,
+          label: `Guard Logs (${guardNames})`,
           data: guardHourly,
           borderColor: 'rgba(126, 217, 87, 1)',
           backgroundColor: 'rgba(126, 217, 87, 0.08)',
@@ -340,6 +406,7 @@ const Dashboard = () => {
       ],
     };
   };
+  
   const baseChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -397,8 +464,6 @@ const Dashboard = () => {
     ]
   };
 
-  
-
   const monthlyChartOptions = {
     ...baseChartOptions,
     plugins: {
@@ -443,66 +508,15 @@ const Dashboard = () => {
     },
   };
 
-  const handleSyncComplete = (logs, guard, guardId) => {
-    // logs=null means guard was deactivated
-    if (!logs) {
-      handleClearGuardLogs(guardId);
-      return;
-    }
-    const payload = { logs, guard, guardId };
-    setSyncedLogs(payload);
-    setGuardLogs(payload);
-    localStorage.setItem('logpoint_synced_guard', JSON.stringify(payload));
-    setShowSyncModal(false);
-    showBanner(`Successfully synced ${logs.length} log(s) from ${guard.firstName} ${guard.lastName}`, 'success');
-  };
-
-  const handleClearGuardLogs = (guardId) => {
-    setGuardLogs(null);
-    setSyncedLogs(null);
-    localStorage.removeItem('logpoint_synced_guard');
-    // Deactivate on backend if we have a guardId
-    if (guardId) {
-      fetch(`http://localhost:8080/api/sync/deactivate/${guardId}`, {
-        method: 'POST', credentials: 'include',
-      }).catch(() => {});
-    }
-  };
-
-  // Live poll: re-fetch guard logs every 10s while a sync is active
-  useEffect(() => {
-    const saved = localStorage.getItem('logpoint_synced_guard');
-    if (!saved) return;
-    let parsed;
-    try { parsed = JSON.parse(saved); } catch { return; }
-    const gId = parsed?.guardId;
-    if (!gId) return;
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`http://localhost:8080/api/sync/live/${gId}`, {
-          credentials: 'include',
-        });
-        if (!res.ok) return;
-        const freshLogs = await res.json();
-        const payload = { logs: freshLogs, guard: parsed.guard, guardId: gId };
-        setGuardLogs(payload);
-        setSyncedLogs(payload);
-        localStorage.setItem('logpoint_synced_guard', JSON.stringify(payload));
-      } catch {
-        // silent — keep trying
-      }
-    }, 10000);
-
-    return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // ── Derived monthly footer values ─────────────────────────────────────────
   const momPositive = stats.momGrowth !== null && stats.momGrowth >= 0;
   const momLabel = stats.momGrowth !== null
     ? `${momPositive ? '+' : ''}${stats.momGrowth}%`
     : '—';
+
+  const hasSyncedLogs = Object.keys(syncedLogs).length > 0;
+  const totalSyncedCount = Object.values(syncedLogs).reduce((sum, logs) => sum + logs.length, 0);
+  const allSyncedLogs = Object.values(syncedLogs).flat();
 
   return (
     <div className="dashboard-wrapper">
@@ -647,30 +661,35 @@ const Dashboard = () => {
                 <div className="chart-header">
                   <div className="chart-title">
                     <AccessTimeOutlinedIcon className="chart-icon" />
-                    {guardLogs
-                      ? `Merged Logs — You & ${guardLogs.guard?.firstName || 'Guard'} (24h)`
+                    {hasSyncedLogs
+                      ? `Merged Logs — You & ${Object.keys(syncedGuards).length} Guard(s) (24h)`
                       : 'Hourly Traffic (24h)'}
                   </div>
-                  {guardLogs && (
+                  {hasSyncedLogs && (
                     <button
                       className="chart-clear-btn"
-                      onClick={() => handleClearGuardLogs(guardLogs.guardId)}
-                      title="Clear synced guard data"
+                      onClick={() => {
+                        // Clear all synced logs
+                        Object.keys(syncedLogs).forEach(guardId => {
+                          handleSyncComplete(null, null, guardId, false);
+                        });
+                      }}
+                      title="Clear all synced guard data"
                     >
-                      × Clear guard data
+                      × Clear all guard data
                     </button>
                   )}
                 </div>
                 <div className="chart-body">
                   <Line
-                    data={guardLogs ? mergedChartData : hourlyChartData}
-                    options={guardLogs ? mergedChartOptions : baseChartOptions}
+                    data={hasSyncedLogs && mergedChartData ? mergedChartData : hourlyChartData}
+                    options={hasSyncedLogs && mergedChartData ? mergedChartOptions : baseChartOptions}
                   />
                 </div>
-                {guardLogs && (
+                {hasSyncedLogs && (
                   <div className="chart-sync-badge">
                     <SyncIcon style={{ fontSize: 13 }} />
-                    Synced from {guardLogs.guard?.firstName} {guardLogs.guard?.lastName} — {guardLogs.logs.length} record{guardLogs.logs.length !== 1 ? 's' : ''}
+                    Synced from {Object.keys(syncedGuards).length} guard(s) — {totalSyncedCount} total record{totalSyncedCount !== 1 ? 's' : ''}
                   </div>
                 )}
               </div>
@@ -779,7 +798,7 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Sync Guard Modal */}
+      {/* Sync Guard Modal - onSyncComplete now passes isCancelled as third parameter */}
       {showSyncModal && (
         <SyncGuardModal
           onClose={() => setShowSyncModal(false)}
@@ -788,26 +807,35 @@ const Dashboard = () => {
       )}
 
       {/* Synced logs preview panel */}
-      {syncedLogs && (
+      {hasSyncedLogs && (
         <div className="synced-panel">
           <div className="synced-panel-header">
             <SyncIcon className="synced-panel-icon" />
             <span>
-              Synced <strong>{syncedLogs.logs.length}</strong> log(s) from{' '}
-              <strong>{syncedLogs.guard.firstName} {syncedLogs.guard.lastName}</strong>
+              Synced <strong>{totalSyncedCount}</strong> log(s) from{' '}
+              <strong>{Object.keys(syncedGuards).length}</strong> guard(s)
             </span>
-            <button className="synced-panel-close" onClick={() => setSyncedLogs(null)}>×</button>
+            <button 
+              className="synced-panel-close" 
+              onClick={() => {
+                Object.keys(syncedLogs).forEach(guardId => {
+                  handleSyncComplete(null, null, guardId, false);
+                });
+              }}
+            >
+              ×
+            </button>
           </div>
           <div className="synced-panel-list">
-            {syncedLogs.logs.slice(0, 5).map(log => (
+            {allSyncedLogs.slice(0, 5).map(log => (
               <div key={log.id} className="synced-log-row">
                 <span className="synced-log-name">{log.visitorName || `Visitor #${log.visitorId}`}</span>
                 <span className="synced-log-purpose">{log.purposeName || '—'}</span>
                 <span className={`synced-log-status ${log.status?.toLowerCase()}`}>{log.status}</span>
               </div>
             ))}
-            {syncedLogs.logs.length > 5 && (
-              <div className="synced-log-more">+{syncedLogs.logs.length - 5} more records</div>
+            {totalSyncedCount > 5 && (
+              <div className="synced-log-more">+{totalSyncedCount - 5} more records</div>
             )}
           </div>
         </div>

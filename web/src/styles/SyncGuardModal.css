@@ -418,3 +418,265 @@
   color: var(--error);
   background: rgba(229, 57, 53, 0.06);
 }
+
+/* Synced row highlight */
+.sgm-guard-row.synced-row {
+  background: rgba(0, 74, 173, 0.03);
+  border-left: 3px solid var(--primary-dark);
+  padding-left: 11px; /* compensate for border */
+}
+ 
+/* Avatar gradient for live-synced guard */
+.sgm-guard-avatar.avatar-live {
+  background: linear-gradient(135deg, #1d9e75, #7ed957);
+}
+ 
+/* Synced button group: label + delete icon */
+.sync-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+ 
+/* "Synced — Guard Name" label */
+.sync-btn-synced-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  background: rgba(0, 74, 173, 0.08);
+  white-space: nowrap;
+  cursor: default;
+}
+ 
+.sync-btn-synced-label .btn-icon-sm {
+  font-size: 14px !important;
+  color: #1d9e75;
+}
+ 
+/* Delete / Stop sync button */
+.sync-btn-stop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  background: white;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+ 
+.sync-btn-stop:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(229, 57, 53, 0.06);
+}
+ 
+/* SYNCED chip */
+.sync-chip.synced {
+  background: rgba(0, 74, 173, 0.10);
+  color: var(--primary-dark);
+}
+
+/* ── Confirm dialog overlay (sits above the modal) ── */
+.sgm-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 20, 50, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 16px;
+}
+ 
+.sgm-confirm-box {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  text-align: center;
+}
+ 
+.sgm-confirm-msg {
+  font-size: 14px;
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+ 
+.sgm-confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+ 
+.sgm-confirm-btn {
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+ 
+.sgm-confirm-btn.cancel {
+  background: var(--bg-light);
+  color: var(--text-medium);
+  border: 1.5px solid var(--border-light);
+}
+ 
+.sgm-confirm-btn.cancel:hover {
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
+}
+ 
+.sgm-confirm-btn.confirm {
+  background: rgba(229, 57, 53, 0.08);
+  color: var(--error);
+  border: 1.5px solid rgba(229, 57, 53, 0.3);
+}
+ 
+.sgm-confirm-btn.confirm:hover {
+  background: rgba(229, 57, 53, 0.15);
+}
+ 
+/* ── Synced row highlight ── */
+.sgm-guard-row.synced-row {
+  background: rgba(0, 74, 173, 0.03);
+  border-left: 3px solid var(--primary-dark);
+  padding-left: 11px;
+}
+ 
+/* ── Cancelled row ── */
+.sgm-guard-row.cancelled-row {
+  background: rgba(229, 57, 53, 0.03);
+  border-left: 3px solid rgba(229, 57, 53, 0.35);
+  padding-left: 11px;
+  opacity: 0.75;
+}
+ 
+/* ── Cancelled chip ── */
+.sync-chip.cancelled {
+  background: rgba(229, 57, 53, 0.09);
+  color: var(--error);
+}
+ 
+/* ── Synced avatar gradient ── */
+.sgm-guard-avatar.avatar-live {
+  background: linear-gradient(135deg, #1d9e75, #7ed957);
+}
+ 
+/* ── Synced button group: label + Cancel button ── */
+.sync-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.sync-btn-synced-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  background: rgba(0, 74, 173, 0.08);
+  white-space: nowrap;
+  cursor: default;
+}
+ 
+.sync-btn-synced-label .btn-icon-sm {
+  font-size: 14px !important;
+  color: #1d9e75;
+}
+ 
+/* ── "Cancel" text button next to Synced label ── */
+.sync-btn-cancel-sync {
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: 1.5px solid rgba(229, 57, 53, 0.3);
+  background: rgba(229, 57, 53, 0.06);
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+ 
+.sync-btn-cancel-sync:hover {
+  background: rgba(229, 57, 53, 0.14);
+  border-color: rgba(229, 57, 53, 0.5);
+}
+ 
+/* ── Cancelled state label (no action) ── */
+.sync-btn-cancelled-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--error);
+  background: rgba(229, 57, 53, 0.07);
+  cursor: default;
+  white-space: nowrap;
+}
+ 
+.sync-btn-cancelled-label .btn-icon-sm {
+  font-size: 14px !important;
+}
+ 
+/* ── SYNCED chip ── */
+.sync-chip.synced {
+  background: rgba(0, 74, 173, 0.10);
+  color: var(--primary-dark);
+}
+.sync-btn-resync {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: 1.5px solid var(--primary-dark);
+  background: rgba(0, 74, 173, 0.06);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.sync-btn-resync:hover {
+  background: rgba(0, 74, 173, 0.14);
+  border-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* Ensure the button group has proper spacing */
+.sync-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
