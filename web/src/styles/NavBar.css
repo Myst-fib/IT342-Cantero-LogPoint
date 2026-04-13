@@ -28,20 +28,11 @@
 
 .logo-image {
   width: auto;
-  height: 40px; /* Fixed height for consistency */
-  max-width: 180px; /* Prevents overly wide logos */
+  height: 40px;
+  max-width: 180px;
   object-fit: contain;
   display: block;
 }
-
-/* Alternative if you want a specific width instead of height */
-/* .logo-image {
-  width: 140px;
-  height: auto;
-  max-height: 50px;
-  object-fit: contain;
-  display: block;
-} */
 
 .nav-section {
   padding: 16px 12px 0;
@@ -216,22 +207,11 @@
 }
 
 /* Scrollbar Styling */
-.nav-section::-webkit-scrollbar {
-  width: 4px;
-}
+.nav-section::-webkit-scrollbar { width: 4px; }
+.nav-section::-webkit-scrollbar-track { background: transparent; }
+.nav-section::-webkit-scrollbar-thumb { background: rgba(0,74,173,0.2); border-radius: 10px; }
+.nav-section::-webkit-scrollbar-thumb:hover { background: rgba(0,74,173,0.4); }
 
-.nav-section::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.nav-section::-webkit-scrollbar-thumb {
-  background: rgba(0, 74, 173, 0.2);
-  border-radius: 10px;
-}
-
-.nav-section::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 74, 173, 0.4);
-}
 /* ===== NAV BUTTON ITEM ===== */
 .nav-item-btn {
   width: 100%;
@@ -242,34 +222,24 @@
   position: relative;
 }
 
-.nav-item-btn.notif-active {
-  background: rgba(0, 74, 173, 0.07);
-  color: var(--primary-dark);
-}
-
-/* Notification badge */
-.notif-badge {
+/* ===== RED DOT — unread indicator only ===== */
+/* Replaces the old number badge. A small pulsing dot in the top-right
+   of the bell icon area. Disappears once the panel is opened. */
+.notif-dot {
   position: absolute;
+  top: 8px;
   right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
-  background: var(--error);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  animation: notif-pulse 2s ease-in-out infinite;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--error, #e53935);
+  border: 2px solid var(--white, #fff);
+  animation: dot-pulse 2s ease-in-out infinite;
 }
 
-@keyframes notif-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.4); }
-  50%       { box-shadow: 0 0 0 6px rgba(229,57,53,0); }
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.45); }
+  50%       { box-shadow: 0 0 0 5px rgba(229, 57, 53, 0); }
 }
 
 /* ===== SYNC NOTIFICATION MODAL ===== */
@@ -295,10 +265,13 @@
   border-radius: 16px;
   padding: 32px 28px 24px;
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0,74,173,0.18);
   animation: notif-slide-up 0.22s cubic-bezier(0.16,1,0.3,1);
+  position: relative; /* for dismiss button */
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 @keyframes notif-slide-up {
@@ -327,26 +300,13 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--text-dark);
-  margin-bottom: 10px;
-}
-
-.sync-notif-body {
-  font-size: 14px;
-  color: var(--text-medium);
-  line-height: 1.55;
-  margin-bottom: 6px;
-}
-
-.sync-notif-sub {
-  font-size: 13px;
-  color: var(--text-light);
-  margin-bottom: 24px;
+  margin-bottom: 14px;
 }
 
 .sync-notif-empty {
   font-size: 14px;
   color: var(--text-light);
-  padding: 12px 0 24px;
+  padding: 12px 0 20px;
 }
 
 .sync-notif-actions {
@@ -395,7 +355,7 @@
   background: rgba(229,57,53,0.04);
 }
 
-/* Dismiss X button — closes modal only, request stays alive */
+/* Dismiss X button */
 .sync-notif-dismiss {
   position: absolute;
   top: 12px;
@@ -416,14 +376,67 @@
   color: var(--text-dark);
 }
 
-.sync-notif-modal {
-  position: relative; /* needed for absolute positioning of dismiss btn */
+/* ===== NOTIFICATION HISTORY LIST ===== */
+.sync-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  margin-bottom: 4px;
 }
 
-.sync-notif-dismiss-hint {
-  margin-top: 12px;
+.sync-history-entry {
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--bg-light, #f9fafc);
+  transition: border-color 0.15s;
+}
+
+/* Left accent stripe by status */
+.sync-history-entry.status-pending  { border-left: 3px solid #f59e0b; }
+.sync-history-entry.status-accepted { border-left: 3px solid #10b981; }
+.sync-history-entry.status-declined { border-left: 3px solid var(--error, #e53935); }
+
+.sync-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sync-history-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+/* Status pill */
+.sync-history-badge {
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-pending  { background: #fef3c7; color: #92400e; }
+.badge-accepted { background: #d1fae5; color: #065f46; }
+.badge-declined { background: #fee2e2; color: #991b1b; }
+
+.sync-history-desc {
+  font-size: 12px;
+  color: var(--text-medium);
+  margin-bottom: 4px;
+}
+
+.sync-history-time {
   font-size: 11px;
   color: var(--text-light);
-  text-align: center;
+}
+
+.sync-history-responded {
   font-style: italic;
 }

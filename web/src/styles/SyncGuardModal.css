@@ -680,3 +680,42 @@
   flex-wrap: wrap;
   justify-content: flex-end;
 }
+/* ===== HEADER RIGHT ===== */
+.sgm-header-right {
+  display: flex; align-items: center; gap: 6px;
+}
+
+.sgm-clear-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-light);
+  color: var(--text-light);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.sgm-clear-btn:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: rgba(229,57,53,0.05);
+}
+
+/* ===== INFO BANNER (1-guard limit notice) ===== */
+.sgm-info-banner {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 24px 10px;
+  padding: 9px 13px;
+  background: rgba(0,74,173,0.06);
+  border: 1px solid rgba(0,74,173,0.15);
+  border-radius: 8px;
+  font-size: 12px; color: var(--primary-dark);
+  line-height: 1.4;
+}
+
+/* ===== BLOCKED ROW ===== */
+.sgm-guard-row.blocked-row {
+  opacity: 0.4;
+  pointer-events: none;
+}

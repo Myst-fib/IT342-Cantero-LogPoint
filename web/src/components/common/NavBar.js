@@ -10,9 +10,10 @@ function NavBar() {
   const [loading, setLoading] = useState(true);
 
   // Sync notification state (security guard only)
-  const [syncRequest, setSyncRequest] = useState(null); // null | { requestedByName, status }
+  const [syncHistory, setSyncHistory] = useState([]); // array of { requestedByName, status, timestamp }
   const [showSyncNotif, setShowSyncNotif] = useState(false);
   const [respondingSync, setRespondingSync] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false); // drives the red dot
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -55,6 +56,8 @@ function NavBar() {
   };
 
   // Poll for sync requests — security guard only
+  // Adds a new entry to syncHistory when a PENDING request appears,
+  // without duplicating it if already tracked.
   const pollSyncRequest = useCallback(async () => {
     try {
       const res = await fetch('http://localhost:8080/api/sync/my-request', {
@@ -62,12 +65,26 @@ function NavBar() {
       });
       if (!res.ok) return;
       const data = await res.json();
+
       if (data.status === 'PENDING') {
-        setSyncRequest(data);
-        setShowSyncNotif(true);
-      } else {
-        // If no pending request, hide notification
-        setSyncRequest(null);
+        setSyncHistory(prev => {
+          // Don't add if there's already a PENDING entry for this requester
+          const alreadyPending = prev.some(
+            e => e.status === 'PENDING' && e.requestedByName === data.requestedByName
+          );
+          if (alreadyPending) return prev;
+
+          setHasUnread(true); // light up the red dot
+          return [
+            {
+              id: Date.now(),
+              requestedByName: data.requestedByName || 'An administrator',
+              status: 'PENDING',
+              timestamp: new Date(),
+            },
+            ...prev,
+          ];
+        });
       }
     } catch {
       // silent
@@ -82,6 +99,9 @@ function NavBar() {
     return () => clearInterval(interval);
   }, [user, pollSyncRequest]);
 
+  // Respond to the most recent pending request
+  const pendingEntry = syncHistory.find(e => e.status === 'PENDING');
+
   const handleSyncRespond = async (decision) => {
     setRespondingSync(true);
     try {
@@ -91,13 +111,27 @@ function NavBar() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ decision }),
       });
-      setSyncRequest(null);
-      setShowSyncNotif(false);
+
+      // Update the pending entry in history to reflect the outcome
+      setSyncHistory(prev =>
+        prev.map(e =>
+          e.status === 'PENDING'
+            ? { ...e, status: decision === 'ACCEPTED' ? 'ACCEPTED' : 'DECLINED', respondedAt: new Date() }
+            : e
+        )
+      );
+      // No need to close the modal — guard can still see the result
     } catch {
       // silent
     } finally {
       setRespondingSync(false);
     }
+  };
+
+  // Opening the panel clears the red dot
+  const openNotifPanel = () => {
+    setShowSyncNotif(true);
+    setHasUnread(false);
   };
 
   const isAdmin = user?.role?.toLowerCase() === 'office administrator';
@@ -206,18 +240,19 @@ function NavBar() {
 
           <div className="nav-label" style={{ marginTop: '16px' }}>Account</div>
 
-          {/* Sync Notification Bell — security guard only */}
+          {/* Notifications Bell — security guard only */}
           {isGuard && (
             <button
-              className={`nav-item nav-item-btn ${showSyncNotif && syncRequest ? 'notif-active' : ''}`}
-              onClick={() => setShowSyncNotif(true)}
+              className="nav-item nav-item-btn"
+              onClick={openNotifPanel}
             >
               <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
               Notifications
-              {syncRequest && <span className="notif-badge">1</span>}
+              {/* Red dot — only shown when there's an unread notification */}
+              {hasUnread && <span className="notif-dot" aria-label="Unread notification" />}
             </button>
           )}
 
@@ -264,16 +299,18 @@ function NavBar() {
         </div>
       )}
 
-      {/* Sync Request Notification — security guard only */}
+      {/* Sync Notification Panel — security guard only */}
       {isGuard && showSyncNotif && (
-        <div className="sync-notif-overlay" onClick={(e) => e.target === e.currentTarget && setShowSyncNotif(false)}>
+        <div
+          className="sync-notif-overlay"
+          onClick={(e) => e.target === e.currentTarget && setShowSyncNotif(false)}
+        >
           <div className="sync-notif-modal">
-
-            {/* X button — closes modal only, request stays pending */}
+            {/* Close button */}
             <button
               className="sync-notif-dismiss"
               onClick={() => setShowSyncNotif(false)}
-              title="Dismiss (request stays pending)"
+              title="Close"
             >
               ×
             </button>
@@ -285,44 +322,66 @@ function NavBar() {
               </svg>
             </div>
 
-            {syncRequest ? (
-              <>
-                <div className="sync-notif-title">Sync Request</div>
-                <div className="sync-notif-body">
-                  <strong>{syncRequest.requestedByName || 'An administrator'}</strong> is requesting to collect your visitor log data.
-                </div>
-                <div className="sync-notif-sub">
-                  Do you want to share your logs with the admin?
-                </div>
-                <div className="sync-notif-actions">
-                  <button
-                    className="sync-notif-btn decline"
-                    onClick={() => handleSyncRespond('DECLINED')}
-                    disabled={respondingSync}
-                  >
-                    Decline
-                  </button>
-                  <button
-                    className="sync-notif-btn accept"
-                    onClick={() => handleSyncRespond('ACCEPTED')}
-                    disabled={respondingSync}
-                  >
-                    {respondingSync ? 'Processing…' : 'Accept'}
-                  </button>
-                </div>
-                <div className="sync-notif-dismiss-hint">
-                  Closing this window will not dismiss the request.
-                </div>
-              </>
+            <div className="sync-notif-title">Notifications</div>
+
+            {syncHistory.length === 0 ? (
+              <div className="sync-notif-empty">No notifications yet.</div>
             ) : (
-              <>
-                <div className="sync-notif-title">Notifications</div>
-                <div className="sync-notif-empty">No pending sync requests.</div>
-                <div className="sync-notif-actions">
-                  <button className="sync-notif-btn decline" onClick={() => setShowSyncNotif(false)}>Close</button>
-                </div>
-              </>
+              <div className="sync-history-list">
+                {syncHistory.map((entry) => (
+                  <div key={entry.id} className={`sync-history-entry status-${entry.status.toLowerCase()}`}>
+                    <div className="sync-history-header">
+                      <span className="sync-history-name">{entry.requestedByName}</span>
+                      <span className={`sync-history-badge badge-${entry.status.toLowerCase()}`}>
+                        {entry.status === 'PENDING' && '⏳ Pending'}
+                        {entry.status === 'ACCEPTED' && '✓ Accepted'}
+                        {entry.status === 'DECLINED' && '✕ Declined'}
+                      </span>
+                    </div>
+                    <div className="sync-history-desc">
+                      Requested access to your visitor log data
+                    </div>
+                    <div className="sync-history-time">
+                      {entry.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {' · '}
+                      {entry.timestamp.toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                      {entry.respondedAt && (
+                        <span className="sync-history-responded">
+                          {' · Responded '}
+                          {entry.respondedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Action buttons — only shown while PENDING */}
+                    {entry.status === 'PENDING' && (
+                      <div className="sync-notif-actions" style={{ marginTop: 12 }}>
+                        <button
+                          className="sync-notif-btn decline"
+                          onClick={() => handleSyncRespond('DECLINED')}
+                          disabled={respondingSync}
+                        >
+                          Decline
+                        </button>
+                        <button
+                          className="sync-notif-btn accept"
+                          onClick={() => handleSyncRespond('ACCEPTED')}
+                          disabled={respondingSync}
+                        >
+                          {respondingSync ? 'Processing…' : 'Accept'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
+
+            <div className="sync-notif-actions" style={{ marginTop: 16 }}>
+              <button className="sync-notif-btn decline" onClick={() => setShowSyncNotif(false)}>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
