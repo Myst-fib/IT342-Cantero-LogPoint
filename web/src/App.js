@@ -1,14 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
-import Register from './components/pages/Register';
-import Login from './components/pages/Login';
-import Dashboard from './components/pages/Dashboard';
-import Profile from './components/pages/Profile';
-import NavBar from './components/common/NavBar';
-import AddVisitor from './components/features/AddVisitor';
-import VisitorLog from './components/features/VisitorLog';
-import ProtectedRoute from './components/common/ProtectedRoute';
-import OAuth2Redirect from './components/google/OAuth2Redirect';
+import Register from './features/auth/Register';
+import Login from './features/auth/Login';
+import Dashboard from './features/sync/Dashboard';
+import Profile from './features/profile/Profile';
+import NavBar from './shared/NavBar';
+import AddVisitor from './features/visitors/AddVisitor';
+import VisitorLog from './features/visitlog/VisitorLog';
+import ProtectedRoute from './shared/ProtectedRoute';
+import OAuth2Redirect from './features/auth/OAuth2Redirect';
 
 function AppLayout() {
   const location = useLocation();
