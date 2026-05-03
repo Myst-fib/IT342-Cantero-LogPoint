@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import '../../styles/SyncGuardModal.css';
+import './SyncGuardModal.css';
 import SearchIcon             from '@mui/icons-material/Search';
 import ShieldOutlinedIcon     from '@mui/icons-material/ShieldOutlined';
 import SyncIcon               from '@mui/icons-material/Sync';

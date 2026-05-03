@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/AddVisitor.css';
+import './AddVisitor.css';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';

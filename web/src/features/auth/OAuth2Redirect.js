@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../../styles/OAuth2Redirect.css';
+import './OAuth2Redirect.css';
 
 function OAuth2Redirect() {
   const navigate = useNavigate();

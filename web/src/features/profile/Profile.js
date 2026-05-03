@@ -1,7 +1,7 @@
 // Profile.js
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom'; // Added for navigation
-import '../../styles/Profile.css';
+import './Profile.css';
 
 function Profile() {
   const [user, setUser] = useState(null);

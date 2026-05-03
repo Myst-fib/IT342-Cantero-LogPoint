@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import '../../styles/VisitorLog.css';
+import './VisitorLog.css';
 import EditVisitorModal from './EditVisitorModal';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';

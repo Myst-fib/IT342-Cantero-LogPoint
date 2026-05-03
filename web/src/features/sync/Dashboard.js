@@ -1,7 +1,7 @@
 // Dashboard.js
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import '../../styles/Dashboard.css';
+import './Dashboard.css';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
@@ -16,7 +16,7 @@ import SyncIcon from '@mui/icons-material/Sync';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import SyncGuardModal from '../features/SyncGuardModal';
+import SyncGuardModal from './SyncGuardModal';
 import {
   Chart as ChartJS, ArcElement, CategoryScale, LinearScale,
   BarElement, Title, Tooltip, Legend, PointElement, LineElement,
@@ -327,7 +327,6 @@ const Dashboard = () => {
   // ── Derived values ────────────────────────────────────────────────────────
   const hourlyChart    = buildHourlyChart();
   const momPositive    = stats.momGrowth !== null && stats.momGrowth >= 0;
-  const momLabel       = stats.momGrowth !== null ? `${momPositive ? '+' : ''}${stats.momGrowth}%` : '—';
   const activeCount    = syncedLogs.filter(l => l.status === 'ACTIVE').length;
   const completedCount = syncedLogs.filter(l => l.status === 'COMPLETED').length;
   const guardInitial   = syncedGuardInfo?.firstName?.charAt(0).toUpperCase() || 'G';

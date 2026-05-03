@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import '../../styles/NavBar.css';
-import logo from '../assets/logpoint_logo.png';
+import './NavBar.css';
+import logo from '../features/visitors/assets/logpoint_logo.png';
 
 function NavBar() {
   const navigate = useNavigate();
@@ -100,6 +100,7 @@ function NavBar() {
   }, [user, pollSyncRequest]);
 
   // Respond to the most recent pending request
+  // eslint-disable-next-line
   const pendingEntry = syncHistory.find(e => e.status === 'PENDING');
 
   const handleSyncRespond = async (decision) => {
