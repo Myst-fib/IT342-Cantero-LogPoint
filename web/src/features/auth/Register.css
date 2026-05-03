@@ -1,0 +1,502 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: var(--gradient-primary);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.register-box {
+  background: var(--white);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+}
+
+.register-box h2 {
+  text-align: center;
+  color: var(--primary-light);
+  margin-bottom: 35px;
+  font-size: 34px;
+  font-weight: 600;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  opacity: 0.6;
+  color: #bbb;
+  z-index: 1;
+}
+
+.role-select-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.role-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  opacity: 0.6;
+  color: #bbb;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.input-with-icon input,
+.input-with-icon select,
+.role-select-container select {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.role-select-container select {
+  padding-left: 48px;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  color: var(--text-dark);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 12px 12px 40px;
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-dark);
+  box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+.role-select {
+  width: 100%;
+  background-color: var(--white);
+  color: var(--text-dark);
+  cursor: pointer;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.password-errors {
+  margin-top: 8px;
+  padding: 10px;
+  background-color: #ffe6e6;
+  border-radius: 5px;
+  border-left: 3px solid var(--error);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 12px;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.error-icon {
+  color: var(--error);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+.login-link p {
+  margin: 0;
+  padding: 10px;
+}
+
+.clickable-link {
+  color: var(--primary-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.clickable-link:hover {
+  color: var(--primary-light);
+  text-decoration: underline;
+}
+
+/* Notification Styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 350px;
+  max-width: 450px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #F3F4F4; /* Updated background color */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  border-left: 4px solid;
+}
+
+.notification-success {
+  border-left-color: var(--success);
+}
+
+.notification-error {
+  border-left-color: var(--error);
+}
+
+.notification-warning {
+  border-left-color: var(--warning);
+}
+
+.notification-info {
+  border-left-color: var(--info);
+}
+
+.notification-icon-wrapper {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.notification-success .notification-icon {
+  color: var(--success);
+}
+
+.notification-error .notification-icon {
+  color: var(--error);
+}
+
+.notification-warning .notification-icon {
+  color: var(--warning);
+}
+
+.notification-info .notification-icon {
+  color: var(--info);
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+  font-size: 16px;
+}
+
+.notification-message {
+  color: var(--text-medium);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.notification-suggestions {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.suggestions-title {
+  font-weight: 500;
+  color: var(--text-dark);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.suggestions-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-medium);
+  font-size: 12px;
+}
+
+.suggestions-list li {
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.notification-hint {
+  color: var(--text-light);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-light);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.notification-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-dark);
+}
+
+/* Field error highlighting */
+.field-error .input-icon {
+  color: var(--error);
+}
+
+.error-highlight {
+  border-color: var(--error) !important;
+  background-color: rgba(229, 57, 53, 0.02) !important;
+}
+
+.error-highlight:focus {
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1) !important;
+}
+
+.password-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-light);
+  font-size: 11px;
+}
+
+/* Loading state */
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #718096, #a0aec0);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .register-box {
+    padding: 30px 20px;
+    max-width: 100%;
+  }
+
+  .register-box h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .notification-title {
+    font-size: 15px;
+  }
+  
+  .notification-message {
+    font-size: 13px;
+  }
+}
+
+/* Force margin-bottom on ALL form groups */
+.register-box form .form-group {
+  margin-bottom: 18px !important; /* Using !important to ensure it overrides any other styles */
+}
+
+.register-box form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 0; 
+}
+
+/* Ensure individual inputs in a row still have margin-bottom */
+.register-box form .form-row .form-group {
+  margin-bottom: 0 !important; 
+}
+
+/* Add margin after the entire row instead */
+.register-box form .form-row {
+  margin-bottom: 30px !important;
+}
+
+.register-box form .password-errors {
+  margin-top: 5px;
+  margin-bottom: 30px !important; /* Add margin after password errors */
+  padding: 10px;
+  background-color: #ffe6e6;
+  border-radius: 5px;
+  border-left: 3px solid var(--error);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Ensure the submit button has proper spacing from the last element */
+.register-box form .submit-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .register-box {
+    padding: 30px 20px;
+    max-width: 100%;
+  }
+
+  .register-box h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+  }
+
+  .register-box form .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-bottom: 0 !important;
+  }
+  
+  /* On mobile, each input in the row needs its own margin */
+  .register-box form .form-row .form-group {
+    margin-bottom: 30px !important;
+  }
+  
+  /* Remove margin from the last input in the row on mobile */
+  .register-box form .form-row .form-group:last-child {
+    margin-bottom: 30px !important; /* Keep margin for consistency */
+  }
+  
+  .notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .notification-title {
+    font-size: 15px;
+  }
+  
+  .notification-message {
+    font-size: 13px;
+  }
+}
