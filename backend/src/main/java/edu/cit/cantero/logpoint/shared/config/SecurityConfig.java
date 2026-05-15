@@ -24,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Configuration
 @EnableWebSecurity
@@ -71,57 +68,49 @@ public class SecurityConfig {
     public AuthenticationSuccessHandler authenticationSuccessHandler() {
         return new AuthenticationSuccessHandler() {
             @Override
-            public void onAuthenticationSuccess(HttpServletRequest request, 
-                                              HttpServletResponse response, 
-                                              Authentication authentication) throws IOException, ServletException {
-                
+            public void onAuthenticationSuccess(HttpServletRequest request,
+                                                HttpServletResponse response,
+                                                Authentication authentication)
+                    throws IOException, ServletException {
+
                 OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-                
-                // Extract user info from Google
-                String email = oauth2User.getAttribute("email");
-                String firstName = oauth2User.getAttribute("given_name");
-                String lastName = oauth2User.getAttribute("family_name");
-                String picture = oauth2User.getAttribute("picture");
-                
+                String email      = oauth2User.getAttribute("email");
+                String firstName  = oauth2User.getAttribute("given_name");
+                String lastName   = oauth2User.getAttribute("family_name");
+                String picture    = oauth2User.getAttribute("picture");
+
                 logger.info("OAuth2 login successful for: {}", email);
-                
+
                 try {
-                    // Double-check that user exists in database
                     Optional<User> userOpt = userRepository.findByEmail(email);
-                    
+
                     if (userOpt.isPresent()) {
                         User user = userOpt.get();
-                        logger.info("User found in database: ID={}, Provider={}", 
-                                  user.getId(), user.getAuthProvider());
-                        
-                        // Store in session
+
                         Map<String, Object> userInfo = new HashMap<>();
-                        userInfo.put("id", user.getId());
-                        userInfo.put("email", email);
-                        userInfo.put("firstName", user.getFirstName());
-                        userInfo.put("lastName", user.getLastName());
-                        userInfo.put("picture", picture);
+                        userInfo.put("id",           user.getId());
+                        userInfo.put("email",        email);
+                        userInfo.put("firstName",    user.getFirstName());
+                        userInfo.put("lastName",     user.getLastName());
+                        userInfo.put("picture",      picture);
                         userInfo.put("authProvider", "GOOGLE");
-                        userInfo.put("role", user.getRole());
-                        
+                        userInfo.put("role",         user.getRole());
+
                         request.getSession().setAttribute("oauth2User", userInfo);
-                        
-                        // Redirect to frontend with user info
-                        String redirectUrl = "http://localhost:3000/oauth2/redirect?" +
-                            "id=" + user.getId() +
-                            "&email=" + (email != null ? email : "") +
-                            "&firstName=" + (user.getFirstName() != null ? user.getFirstName() : "") +
-                            "&lastName=" + (user.getLastName() != null ? user.getLastName() : "") +
-                            "&picture=" + (picture != null ? picture : "") +
-                            "&role=" + (user.getRole() != null ? user.getRole() : "USER");
-                        
-                        logger.info("Redirecting to: {}", redirectUrl);
+
+                        String redirectUrl = "http://localhost:3000/oauth2/redirect?"
+                                + "id="        + user.getId()
+                                + "&email="    + (email            != null ? email            : "")
+                                + "&firstName="+ (user.getFirstName() != null ? user.getFirstName() : "")
+                                + "&lastName=" + (user.getLastName()  != null ? user.getLastName()  : "")
+                                + "&picture="  + (picture          != null ? picture          : "")
+                                + "&role="     + (user.getRole()   != null ? user.getRole()   : "USER");
+
                         response.sendRedirect(redirectUrl);
                     } else {
                         logger.error("User not found in database after OAuth2 login!");
                         response.sendRedirect("http://localhost:3000/login?error=user_not_found");
                     }
-                    
                 } catch (Exception e) {
                     logger.error("Error in authentication success handler: ", e);
                     response.sendRedirect("http://localhost:3000/login?error=server_error");
@@ -130,14 +119,31 @@ public class SecurityConfig {
         };
     }
 
+    /**
+     * CORS configuration.
+     *
+     * FIX: Added mobile-friendly origins:
+     *   - http://10.0.2.2:*  → Android Emulator accessing host machine
+     *   - http://localhost:* → Web / iOS Simulator
+     *   - http://localhost:3000 → React web frontend
+     *
+     * For production, replace "*" with your actual deployed frontend URL.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+            "http://localhost:3000",   // React web app
+            "http://localhost:*",      // any local port (iOS sim, dev tools)
+            "http://10.0.2.2:*",       // Android Emulator → host machine
+            "http://192.168.*.*:*"     // real device on same LAN (adjust subnet if needed)
+        ));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
