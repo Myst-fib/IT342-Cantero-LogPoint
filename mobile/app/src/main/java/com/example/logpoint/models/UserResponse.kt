@@ -1,10 +1,13 @@
 package com.example.logpoint.models
 
 data class UserResponse(
-    val id: Int?,
-    val username: String?,
-    val email: String?,
+    val id: Long?,          // Long to match backend UserDTO (Java Long)
     val firstName: String?,
     val lastName: String?,
-    val token: String?
+    val email: String?,
+    val role: String?,
+    val status: String?,
+    val authProvider: String?,
+    val pictureUrl: String?,
+    val token: String?      // kept for future JWT use
 )

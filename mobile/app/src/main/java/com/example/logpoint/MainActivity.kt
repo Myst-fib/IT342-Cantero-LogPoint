@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import com.example.logpoint.activities.DashboardActivity
+import com.example.logpoint.activities.AdminDashboardActivity
 import com.example.logpoint.activities.LoginActivity
 import com.example.logpoint.utils.SessionManager
 
@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             // Check if user is already logged in
             if (sessionManager.isLoggedIn()) {
-                startActivity(Intent(this, DashboardActivity::class.java))
+                startActivity(Intent(this, AdminDashboardActivity::class.java))
             } else {
                 startActivity(Intent(this, LoginActivity::class.java))
             }

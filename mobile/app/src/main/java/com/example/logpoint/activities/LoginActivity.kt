@@ -3,9 +3,12 @@ package com.example.logpoint.activities
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.text.method.HideReturnsTransformationMethod
+import android.text.method.PasswordTransformationMethod
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -22,107 +25,116 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var etUsername: EditText
     private lateinit var etPassword: EditText
+    private lateinit var ivTogglePassword: ImageView
     private lateinit var btnLogin: Button
     private lateinit var tvSignUp: TextView
     private lateinit var tvError: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var sessionManager: SessionManager
 
+    private var isPasswordVisible = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // Initialize views
         initViews()
-
-        // Initialize session manager
         sessionManager = SessionManager(this)
 
-        // Check if already logged in
         if (sessionManager.isLoggedIn()) {
-            navigateToDashboard()
+            navigateByRole()
+            return
         }
 
-        // Set click listeners
         setupClickListeners()
     }
 
     private fun initViews() {
-        etUsername = findViewById(R.id.etUsername)
-        etPassword = findViewById(R.id.etPassword)
-        btnLogin = findViewById(R.id.btnLogin)
-        tvSignUp = findViewById(R.id.tvSignUp)
-        tvError = findViewById(R.id.tvError)
-        progressBar = findViewById(R.id.progressBar)
+        etUsername       = findViewById(R.id.etUsername)
+        etPassword       = findViewById(R.id.etPassword)
+        ivTogglePassword = findViewById(R.id.ivTogglePassword)
+        btnLogin         = findViewById(R.id.btnLogin)
+        tvSignUp         = findViewById(R.id.tvSignUp)
+        tvError          = findViewById(R.id.tvError)
+        progressBar      = findViewById(R.id.progressBar)
     }
 
     private fun setupClickListeners() {
-        btnLogin.setOnClickListener {
-            performLogin()
-        }
+        btnLogin.setOnClickListener { performLogin() }
 
         tvSignUp.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
             finish()
         }
+
+        ivTogglePassword.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            if (isPasswordVisible) {
+                etPassword.transformationMethod = HideReturnsTransformationMethod.getInstance()
+                ivTogglePassword.setImageResource(R.drawable.eye)
+            } else {
+                etPassword.transformationMethod = PasswordTransformationMethod.getInstance()
+                ivTogglePassword.setImageResource(R.drawable.eye_slash)
+            }
+            etPassword.setSelection(etPassword.text.length)
+        }
     }
 
     private fun performLogin() {
-        val username = etUsername.text.toString().trim()
+        val email    = etUsername.text.toString().trim()
         val password = etPassword.text.toString().trim()
 
-        // Validate inputs
-        if (TextUtils.isEmpty(username)) {
-            etUsername.error = "Username is required"
+        if (TextUtils.isEmpty(email)) {
+            etUsername.error = "Email is required"
             return
         }
-
         if (TextUtils.isEmpty(password)) {
             etPassword.error = "Password is required"
             return
         }
 
-        // Show progress, hide error
         showLoading(true)
         tvError.visibility = View.GONE
 
-        // Make API call
         lifecycleScope.launch {
             try {
                 val response = RetrofitClient.instance.login(
-                    LoginRequest(username, password)
+                    LoginRequest(username = email, password = password)
                 )
 
                 if (response.isSuccessful) {
-                    response.body()?.let { user ->
-                        // Save session
-                        user.id?.let { userId ->
-                            sessionManager.saveLoginSession(
-                                userId,
-                                user.username ?: username,
-                                user.email ?: ""
-                            )
-                        }
-
-                        Toast.makeText(
-                            this@LoginActivity,
-                            "Login successful!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        navigateToDashboard()
+                    val user = response.body()
+                    if (user != null) {
+                        sessionManager.saveLoginSession(user)
+                        Toast.makeText(this@LoginActivity, "Welcome back!", Toast.LENGTH_SHORT).show()
+                        navigateByRole()
+                    } else {
+                        showError("Login failed: empty response")
                     }
                 } else {
-                    showError(response.errorBody()?.string() ?: "Login failed")
+                    val errorMsg = response.errorBody()?.string() ?: "Invalid credentials"
+                    showError(errorMsg)
                 }
             } catch (e: IOException) {
-                showError("Network error: ${e.message}")
+                showError("Network error: cannot reach server.\nCheck your connection or BASE_URL in RetrofitClient.")
             } catch (e: Exception) {
-                showError("Server error: ${e.message}")
+                showError("Error: ${e.message}")
             } finally {
                 showLoading(false)
             }
         }
+    }
+
+    /** Route to the correct dashboard based on role stored in session */
+    private fun navigateByRole() {
+        val role = sessionManager.getRole()?.lowercase() ?: ""
+        val intent = when {
+            role.contains("admin") -> Intent(this, AdminDashboardActivity::class.java)
+            else                   -> Intent(this, GuardDashboardActivity::class.java)
+        }
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -133,10 +145,5 @@ class LoginActivity : AppCompatActivity() {
     private fun showError(message: String) {
         tvError.text = message
         tvError.visibility = View.VISIBLE
-    }
-
-    private fun navigateToDashboard() {
-        startActivity(Intent(this, DashboardActivity::class.java))
-        finish()
     }
 }

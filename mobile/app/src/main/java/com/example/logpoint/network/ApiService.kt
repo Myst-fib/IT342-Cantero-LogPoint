@@ -7,11 +7,14 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
+
+    // Login: backend expects { username (= email), password }
     @POST("api/auth/login")
     suspend fun login(
         @Body loginRequest: LoginRequest
     ): Response<UserResponse>
 
+    // Register: backend now returns UserResponse (see AuthController fix)
     @POST("api/auth/register")
     suspend fun register(
         @Body registerRequest: RegisterRequest

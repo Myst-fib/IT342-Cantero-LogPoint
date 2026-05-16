@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_visitor_log"
+        android:icon="@drawable/ic_nav_visitors"
+        android:title="Visitor Log" />
+    <item
+        android:id="@+id/nav_add_visitor"
+        android:icon="@drawable/ic_nav_add"
+        android:title="Add Visitor" />
+    <item
+        android:id="@+id/nav_notifications"
+        android:icon="@drawable/ic_nav_notifications"
+        android:title="Notifications" />
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_nav_profile"
+        android:title="Profile" />
+</menu>

@@ -31,18 +31,18 @@
                 android:gravity="center"
                 android:layout_marginBottom="@dimen/spacing_xxxl" />
 
-            <!-- Username Label -->
+            <!-- Email Label -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Username"
+                android:text="Email"
                 android:textColor="@color/text_dark"
                 android:textSize="@dimen/text_sm"
                 android:textStyle="bold"
                 android:layout_marginBottom="@dimen/spacing_sm"
                 android:gravity="start" />
 
-            <!-- Username Input with Icon -->
+            <!-- Email Input -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -66,11 +66,11 @@
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@id/iconEmail"
                     android:layout_marginStart="@dimen/input_icon_margin"
-                    android:hint="Enter your username"
+                    android:hint="Enter your email"
                     android:background="@null"
                     android:textSize="@dimen/text_sm"
                     android:maxLines="1"
-                    android:inputType="text"
+                    android:inputType="textEmailAddress"
                     android:textColor="@color/text_dark"
                     android:textColorHint="@color/text_light"
                     android:gravity="start|center_vertical"
@@ -91,7 +91,7 @@
                 android:layout_marginBottom="@dimen/spacing_sm"
                 android:gravity="start" />
 
-            <!-- Password Input with Icon -->
+            <!-- Password Input with visibility toggle -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -109,12 +109,25 @@
                     android:layout_centerVertical="true"
                     android:focusable="false" />
 
+                <ImageView
+                    android:id="@+id/ivTogglePassword"
+                    android:layout_width="@dimen/icon_size_lg"
+                    android:layout_height="@dimen/icon_size_lg"
+                    android:src="@drawable/eye_slash"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:padding="2dp" />
+
                 <EditText
                     android:id="@+id/etPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@id/iconPassword"
+                    android:layout_toStartOf="@id/ivTogglePassword"
                     android:layout_marginStart="@dimen/input_icon_margin"
+                    android:layout_marginEnd="@dimen/input_icon_margin"
                     android:hint="Enter your password"
                     android:inputType="textPassword"
                     android:background="@null"
@@ -140,7 +153,7 @@
                 android:visibility="gone"
                 android:layout_marginBottom="@dimen/spacing_sm" />
 
-            <!-- Login Button (MaterialButton) -->
+            <!-- Login Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
@@ -175,8 +188,7 @@
                     android:layout_height="wrap_content"
                     android:text="Don't have an account? "
                     android:textColor="@color/text_light"
-                    android:textSize="@dimen/text_sm"
-                    android:gravity="start" />
+                    android:textSize="@dimen/text_sm" />
 
                 <TextView
                     android:id="@+id/tvSignUp"
@@ -187,8 +199,7 @@
                     android:textSize="@dimen/text_sm"
                     android:textStyle="bold"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="start" />
+                    android:focusable="true" />
 
             </LinearLayout>
 
