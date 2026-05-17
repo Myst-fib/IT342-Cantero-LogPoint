@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Error banner -->
+        <TextView
+            android:id="@+id/tvEditError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/error"
+            android:textSize="13sp"
+            android:background="@drawable/error_banner_bg"
+            android:padding="10dp"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Visitor Name -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Visitor Name *" android:textSize="13sp" android:textColor="@color/text_medium"
+            android:textStyle="bold" android:layout_marginBottom="6dp" />
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp" android:background="@drawable/input_background" android:padding="10dp">
+            <ImageView android:id="@+id/iconName" android:layout_width="18dp" android:layout_height="18dp"
+                android:src="@drawable/ic_person" android:layout_alignParentStart="true"
+                android:layout_centerVertical="true" android:alpha="0.5" />
+            <EditText android:id="@+id/etEditVisitorName" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_toEndOf="@id/iconName"
+                android:layout_marginStart="8dp" android:background="@null" android:textSize="14sp"
+                android:maxLines="1" android:inputType="textPersonName"
+                android:textColor="@color/text_dark" android:textColorHint="@color/text_light"
+                android:hint="Enter full name" />
+        </RelativeLayout>
+
+        <!-- Purpose -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Purpose *" android:textSize="13sp" android:textColor="@color/text_medium"
+            android:textStyle="bold" android:layout_marginBottom="6dp" />
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp" android:background="@drawable/input_background" android:padding="10dp">
+            <ImageView android:id="@+id/iconPurpose" android:layout_width="18dp" android:layout_height="18dp"
+                android:src="@drawable/ic_nav_add" android:layout_alignParentStart="true"
+                android:layout_centerVertical="true" android:alpha="0.5" />
+            <Spinner android:id="@+id/spinnerEditPurpose" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_toEndOf="@id/iconPurpose"
+                android:layout_marginStart="8dp" android:layout_centerVertical="true"
+                android:background="@null" android:textSize="14sp" />
+        </RelativeLayout>
+
+        <!-- Other Purpose -->
+        <LinearLayout android:id="@+id/layoutEditOtherPurpose"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Specify Purpose *" android:textSize="13sp" android:textColor="@color/text_medium"
+                android:textStyle="bold" android:layout_marginBottom="6dp" />
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp" android:background="@drawable/input_background" android:padding="10dp">
+                <ImageView android:id="@+id/iconOther" android:layout_width="18dp" android:layout_height="18dp"
+                    android:src="@drawable/ic_nav_add" android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true" android:alpha="0.5" />
+                <EditText android:id="@+id/etEditOtherPurpose" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_toEndOf="@id/iconOther"
+                    android:layout_marginStart="8dp" android:background="@null" android:textSize="14sp"
+                    android:maxLines="1" android:inputType="text"
+                    android:textColor="@color/text_dark" android:hint="Specify purpose" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <!-- Host -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Host *" android:textSize="13sp" android:textColor="@color/text_medium"
+            android:textStyle="bold" android:layout_marginBottom="6dp" />
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp" android:background="@drawable/input_background" android:padding="10dp">
+            <ImageView android:id="@+id/iconHost" android:layout_width="18dp" android:layout_height="18dp"
+                android:src="@drawable/ic_nav_profile" android:layout_alignParentStart="true"
+                android:layout_centerVertical="true" android:alpha="0.5" />
+            <EditText android:id="@+id/etEditHost" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_toEndOf="@id/iconHost"
+                android:layout_marginStart="8dp" android:background="@null" android:textSize="14sp"
+                android:maxLines="1" android:inputType="textPersonName"
+                android:textColor="@color/text_dark" android:hint="Who are they visiting?" />
+        </RelativeLayout>
+
+        <!-- Contact -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Contact Number *" android:textSize="13sp" android:textColor="@color/text_medium"
+            android:textStyle="bold" android:layout_marginBottom="6dp" />
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@drawable/input_background" android:padding="10dp">
+            <ImageView android:id="@+id/iconContact" android:layout_width="18dp" android:layout_height="18dp"
+                android:src="@drawable/ic_nav_notifications" android:layout_alignParentStart="true"
+                android:layout_centerVertical="true" android:alpha="0.5" />
+            <EditText android:id="@+id/etEditContact" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_toEndOf="@id/iconContact"
+                android:layout_marginStart="8dp" android:background="@null" android:textSize="14sp"
+                android:maxLines="1" android:inputType="phone" android:maxLength="11"
+                android:textColor="@color/text_dark" android:hint="09XXXXXXXXX" />
+        </RelativeLayout>
+
+    </LinearLayout>
+</ScrollView>

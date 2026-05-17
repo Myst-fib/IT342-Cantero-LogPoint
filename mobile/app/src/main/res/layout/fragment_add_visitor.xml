@@ -1,34 +1,492 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/bg_light"
-    android:padding="16dp"
-    android:gravity="center">
+    android:fillViewport="true">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="➕"
-        android:textSize="48sp"
-        android:layout_marginBottom="16dp" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Visitor"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="@color/primary_dark"
-        android:layout_marginBottom="8dp" />
+        <!-- Page Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Visitor registration form goes here."
-        android:textSize="14sp"
-        android:textColor="@color/text_light"
-        android:gravity="center" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add New Visitor"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_dark" />
 
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fill in the visitor details below"
+                android:textSize="13sp"
+                android:textColor="@color/text_light"
+                android:layout_marginTop="2dp" />
+
+        </LinearLayout>
+
+        <!-- Main Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Card Header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp"
+                    android:background="@color/white">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Visitor Information"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_dark" />
+
+                    <!-- Date badge -->
+                    <TextView
+                        android:id="@+id/tvCurrentDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="May 16, 2026"
+                        android:textSize="12sp"
+                        android:textColor="@color/primary_dark"
+                        android:textStyle="bold"
+                        android:background="@drawable/date_badge_bg"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/border_light" />
+
+                <!-- Form Fields -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Visitor Name -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Visitor Name *"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_medium"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/input_background"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:id="@+id/iconVisitorName"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_person"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:alpha="0.5" />
+
+                        <EditText
+                            android:id="@+id/etVisitorName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/iconVisitorName"
+                            android:layout_marginStart="10dp"
+                            android:hint="Enter full name"
+                            android:background="@null"
+                            android:textSize="14sp"
+                            android:maxLines="1"
+                            android:inputType="textPersonName"
+                            android:textColor="@color/text_dark"
+                            android:textColorHint="@color/text_light"
+                            android:gravity="start|center_vertical" />
+                    </RelativeLayout>
+
+                    <!-- Purpose of Visit -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Purpose of Visit *"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_medium"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/input_background"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:id="@+id/iconPurpose"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_nav_add"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:alpha="0.5" />
+
+                        <Spinner
+                            android:id="@+id/spinnerPurpose"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/iconPurpose"
+                            android:layout_marginStart="10dp"
+                            android:layout_centerVertical="true"
+                            android:background="@null"
+                            android:textSize="14sp" />
+                    </RelativeLayout>
+
+                    <!-- Specify Purpose (shown only when "Other" is selected) -->
+                    <LinearLayout
+                        android:id="@+id/layoutOtherPurpose"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Specify Purpose *"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_medium"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="6dp" />
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:background="@drawable/input_background"
+                            android:padding="12dp">
+
+                            <ImageView
+                                android:id="@+id/iconOtherPurpose"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_nav_add"
+                                android:layout_alignParentStart="true"
+                                android:layout_centerVertical="true"
+                                android:alpha="0.5" />
+
+                            <EditText
+                                android:id="@+id/etOtherPurpose"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_toEndOf="@id/iconOtherPurpose"
+                                android:layout_marginStart="10dp"
+                                android:hint="Please specify the purpose"
+                                android:background="@null"
+                                android:textSize="14sp"
+                                android:maxLines="1"
+                                android:inputType="text"
+                                android:textColor="@color/text_dark"
+                                android:textColorHint="@color/text_light"
+                                android:gravity="start|center_vertical" />
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                    <!-- Host -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Host *"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_medium"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/input_background"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:id="@+id/iconHost"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_nav_profile"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:alpha="0.5" />
+
+                        <EditText
+                            android:id="@+id/etHost"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/iconHost"
+                            android:layout_marginStart="10dp"
+                            android:hint="Who are they visiting?"
+                            android:background="@null"
+                            android:textSize="14sp"
+                            android:maxLines="1"
+                            android:inputType="textPersonName"
+                            android:textColor="@color/text_dark"
+                            android:textColorHint="@color/text_light"
+                            android:gravity="start|center_vertical" />
+                    </RelativeLayout>
+
+                    <!-- Contact Number -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Contact Number *"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_medium"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/input_background"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:id="@+id/iconContact"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_nav_notifications"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:alpha="0.5" />
+
+                        <EditText
+                            android:id="@+id/etContactNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/iconContact"
+                            android:layout_marginStart="10dp"
+                            android:hint="09XXXXXXXXX"
+                            android:background="@null"
+                            android:textSize="14sp"
+                            android:maxLines="1"
+                            android:maxLength="11"
+                            android:inputType="phone"
+                            android:textColor="@color/text_dark"
+                            android:textColorHint="@color/text_light"
+                            android:gravity="start|center_vertical" />
+                    </RelativeLayout>
+
+                    <!-- Time In (read-only, auto-set) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Time In"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_medium"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/input_background_disabled"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:id="@+id/iconTime"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_nav_dashboard"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:alpha="0.5" />
+
+                        <TextView
+                            android:id="@+id/tvTimeIn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toEndOf="@id/iconTime"
+                            android:layout_marginStart="10dp"
+                            android:text="--:--"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_medium"
+                            android:gravity="start|center_vertical" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Auto-updates to Philippine time (PHT)"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_light"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginBottom="24dp" />
+
+                    <!-- Error message -->
+                    <TextView
+                        android:id="@+id/tvError"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/error"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Buttons -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="16dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCancel"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:text="Cancel"
+                            android:textColor="@color/text_medium"
+                            android:backgroundTint="@color/white"
+                            app:strokeColor="@color/border_light"
+                            app:strokeWidth="1.5dp"
+                            app:cornerRadius="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSave"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="Save Entry"
+                            android:textColor="@color/white"
+                            android:background="@drawable/gradient_button"
+                            app:cornerRadius="8dp"
+                            android:stateListAnimator="@null" />
+
+                    </LinearLayout>
+
+                    <!-- Progress Bar -->
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        android:layout_marginTop="8dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Tips Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="@drawable/tips_card_bg">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ℹ️  "
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Quick Tips"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary_dark" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Make sure to verify visitor's identification"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_medium"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Double-check the spelling of the visitor's name"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_medium"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• You can edit visitor details later if needed"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_medium" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+</ScrollView>
