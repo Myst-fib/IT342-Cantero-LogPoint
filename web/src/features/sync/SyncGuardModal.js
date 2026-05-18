@@ -99,9 +99,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
 
   useEffect(() => { fetchGuards(); }, [fetchGuards]);
 
-  // If modal opens while status is SYNCED, just restart the live poll.
-  // Do NOT call onSyncComplete here — that's what was triggering the
-  // "appears to re-sync when opened" bug.
+  // If modal opens while status is SYNCED, restart the live poll.
   useEffect(() => {
     if (syncStatus === 'SYNCED' && syncedGuardId) {
       startLivePoll(syncedGuardId);
@@ -172,8 +170,6 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
   };
 
   // ── Live poll every 10 s ──────────────────────────────────────────────────
-  // This is what keeps the guard logs up to date automatically —
-  // no manual refresh needed.
   const startLivePoll = (guardId) => {
     if (liveRef.current) clearInterval(liveRef.current);
 
@@ -274,11 +270,11 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
   };
 
   // ── Derived helpers ───────────────────────────────────────────────────────
-  const isSynced    = (g) => g.id === syncedGuardId && syncStatus   === 'SYNCED';
-  const isCancelled = (g) => g.id === syncedGuardId && syncStatus   === 'CANCELLED';
-  const isPending   = (g) => g.id === syncedGuardId && transientStatus === 'PENDING';
-  const isCollecting= (g) => g.id === syncedGuardId && transientStatus === 'COLLECTING';
-  const isBlocked   = (g) =>
+  const isSynced     = (g) => g.id === syncedGuardId && syncStatus      === 'SYNCED';
+  const isCancelled  = (g) => g.id === syncedGuardId && syncStatus      === 'CANCELLED';
+  const isPending    = (g) => g.id === syncedGuardId && transientStatus === 'PENDING';
+  const isCollecting = (g) => g.id === syncedGuardId && transientStatus === 'COLLECTING';
+  const isBlocked    = (g) =>
     g.id !== syncedGuardId &&
     (transientStatus === 'PENDING' || transientStatus === 'COLLECTING' || syncStatus === 'SYNCED');
 

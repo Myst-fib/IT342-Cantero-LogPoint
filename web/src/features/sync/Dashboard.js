@@ -17,6 +17,8 @@ import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import SyncGuardModal from './SyncGuardModal';
+import WeatherWidget from '../weather/WeatherWidget';
+
 import {
   Chart as ChartJS, ArcElement, CategoryScale, LinearScale,
   BarElement, Title, Tooltip, Legend, PointElement, LineElement,
@@ -351,12 +353,13 @@ const Dashboard = () => {
 
       <div className="dashboard-container">
         {/* Page Header */}
-        <div className="page-header">
+         <div className="page-header">
           <div>
             <div className="page-title">Dashboard</div>
             <div className="page-subtitle text-light">{currentDate}</div>
           </div>
           <div className="header-actions">
+            <WeatherWidget />
             {/* Sync button — always just opens the modal, never triggers a sync */}
             <button className="btn-view-all" onClick={() => setShowSyncModal(true)}>
               <SyncIcon className="btn-icon" />
