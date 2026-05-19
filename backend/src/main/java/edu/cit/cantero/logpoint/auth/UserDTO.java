@@ -1,6 +1,7 @@
 package edu.cit.cantero.logpoint.auth;
 
 import edu.cit.cantero.logpoint.shared.User;
+import java.time.LocalDateTime;
 
 public class UserDTO {
     private Long id;
@@ -11,19 +12,24 @@ public class UserDTO {
     private String status;
     private String authProvider;
     private String pictureUrl;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public UserDTO(User user) {
-        this.id = user.getId();
-        this.firstName = user.getFirstName();
-        this.lastName = user.getLastName();
-        this.email = user.getEmail();
-        this.role = user.getRole();
-        this.status = user.getStatus();
+        this.id           = user.getId();
+        this.firstName    = user.getFirstName();
+        this.lastName     = user.getLastName();
+        this.email        = user.getEmail();
+        this.role         = user.getRole();
+        this.status       = user.getStatus();
         this.authProvider = user.getAuthProvider();
-        this.pictureUrl = user.getPictureUrl();
+        this.pictureUrl   = user.getPictureUrl();
+        this.createdAt    = user.getCreatedAt();
+        this.updatedAt    = user.getUpdatedAt();
     }
 
-    // Getters and setters
+    // ── Getters & Setters ─────────────────────────────
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -47,4 +53,10 @@ public class UserDTO {
 
     public String getPictureUrl() { return pictureUrl; }
     public void setPictureUrl(String pictureUrl) { this.pictureUrl = pictureUrl; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
