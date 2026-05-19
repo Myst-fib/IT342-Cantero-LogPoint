@@ -3,42 +3,27 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import './NavBar.css';
 import logo from '../features/visitors/assets/logpoint_logo.png';
 
+const API = 'http://localhost:8080';
+
 function NavBar() {
   const navigate = useNavigate();
-  const [showBanner, setShowBanner] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [showBanner, setShowBanner]       = useState(false);
+  const [user, setUser]                   = useState(null);
+  const [loading, setLoading]             = useState(true);
 
   // Sync notification state (security guard only)
-  const [syncHistory, setSyncHistory] = useState([]); // array of { requestedByName, status, timestamp }
+  const [syncHistory, setSyncHistory]     = useState([]);
   const [showSyncNotif, setShowSyncNotif] = useState(false);
   const [respondingSync, setRespondingSync] = useState(false);
-  const [hasUnread, setHasUnread] = useState(false); // drives the red dot
+  const [hasUnread, setHasUnread]         = useState(false);
+  const [respondError, setRespondError]   = useState('');
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setLoading(false);
-      } catch (e) {
-        console.error('Error parsing stored user:', e);
-        fetchUserData();
-      }
-    } else {
-      fetchUserData();
-    }
-  }, []);
-
-  const fetchUserData = async () => {
+  // ── Always fetch user from backend on mount to ensure session is alive ──
+  const fetchUserData = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/user/me', {
+      const response = await fetch(`${API}/api/user/me`, {
         credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       });
 
       if (response.ok) {
@@ -46,35 +31,46 @@ function NavBar() {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
-        console.log('Not authenticated');
+        // Session expired — clear local storage and redirect to login
+        localStorage.removeItem('user');
+        localStorage.removeItem('isLoggedIn');
+        navigate('/login');
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
+      console.error('[NavBar] Error fetching user:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  // Poll for sync requests — security guard only
-  // Adds a new entry to syncHistory when a PENDING request appears,
-  // without duplicating it if already tracked.
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  // ── Poll for sync requests — security guard only ──────────────────────────
   const pollSyncRequest = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/sync/my-request', {
+      const res = await fetch(`${API}/api/sync/my-request`, {
         credentials: 'include',
       });
+
+      // Session expired mid-session — re-fetch user to force login redirect
+      if (res.status === 401) {
+        fetchUserData();
+        return;
+      }
+
       if (!res.ok) return;
       const data = await res.json();
 
       if (data.status === 'PENDING') {
         setSyncHistory(prev => {
-          // Don't add if there's already a PENDING entry for this requester
           const alreadyPending = prev.some(
             e => e.status === 'PENDING' && e.requestedByName === data.requestedByName
           );
           if (alreadyPending) return prev;
 
-          setHasUnread(true); // light up the red dot
+          setHasUnread(true);
           return [
             {
               id: Date.now(),
@@ -87,9 +83,9 @@ function NavBar() {
         });
       }
     } catch {
-      // silent
+      // silent — network error, will retry on next interval
     }
-  }, []);
+  }, [fetchUserData]);
 
   useEffect(() => {
     const isGuard = user?.role?.toLowerCase() === 'security guard';
@@ -99,56 +95,65 @@ function NavBar() {
     return () => clearInterval(interval);
   }, [user, pollSyncRequest]);
 
-  // Respond to the most recent pending request
-  // eslint-disable-next-line
-  const pendingEntry = syncHistory.find(e => e.status === 'PENDING');
-
+  // ── Respond to sync request ───────────────────────────────────────────────
   const handleSyncRespond = async (decision) => {
     setRespondingSync(true);
+    setRespondError('');
     try {
-      await fetch('http://localhost:8080/api/sync/respond', {
+      const res = await fetch(`${API}/api/sync/respond`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ decision }),
       });
 
-      // Update the pending entry in history to reflect the outcome
+      if (res.status === 401) {
+        setRespondError('Session expired. Please log in again.');
+        fetchUserData(); // will redirect to login
+        return;
+      }
+
+      if (!res.ok) {
+        const text = await res.text();
+        setRespondError(`Failed to respond: ${text}`);
+        return;
+      }
+
+      // Success — update the history entry
       setSyncHistory(prev =>
         prev.map(e =>
           e.status === 'PENDING'
-            ? { ...e, status: decision === 'ACCEPTED' ? 'ACCEPTED' : 'DECLINED', respondedAt: new Date() }
+            ? {
+                ...e,
+                status: decision === 'ACCEPTED' ? 'ACCEPTED' : 'DECLINED',
+                respondedAt: new Date(),
+              }
             : e
         )
       );
-      // No need to close the modal — guard can still see the result
-    } catch {
-      // silent
+    } catch (err) {
+      setRespondError(`Network error: ${err.message}`);
     } finally {
       setRespondingSync(false);
     }
   };
 
-  // Opening the panel clears the red dot
   const openNotifPanel = () => {
     setShowSyncNotif(true);
     setHasUnread(false);
+    setRespondError('');
   };
 
   const isAdmin = user?.role?.toLowerCase() === 'office administrator';
   const isGuard = user?.role?.toLowerCase() === 'security guard';
 
-  const requestLogout = () => setShowBanner(true);
+  const requestLogout  = () => setShowBanner(true);
+  const cancelLogout   = () => setShowBanner(false);
 
   const confirmLogout = async () => {
     try {
-      await fetch('http://localhost:8080/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-    } catch (e) {
-      // ignore
-    } finally {
+      await fetch(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch { /* ignore */ } finally {
       localStorage.removeItem('user');
       localStorage.removeItem('isLoggedIn');
       setShowBanner(false);
@@ -156,14 +161,8 @@ function NavBar() {
     }
   };
 
-  const cancelLogout = () => setShowBanner(false);
-
-  const goToDashboard = () => {
-    if (isAdmin) navigate('/dashboard');
-    else navigate('/add-visitor');
-  };
-
-  const goToProfile = () => navigate('/profile');
+  const goToDashboard = () => navigate(isAdmin ? '/dashboard' : '/add-visitor');
+  const goToProfile   = () => navigate('/profile');
 
   if (loading) {
     return (
@@ -174,7 +173,7 @@ function NavBar() {
         <nav className="nav-section">
           <div className="nav-label">Main</div>
           <NavLink to="/add-visitor" className="nav-item">Add Visitor</NavLink>
-          <NavLink to="/records" className="nav-item">Visitor Log</NavLink>
+          <NavLink to="/records"     className="nav-item">Visitor Log</NavLink>
         </nav>
         <div className="sidebar-footer">
           <div className="user-chip">
@@ -196,27 +195,19 @@ function NavBar() {
         <nav className="nav-section">
           <div className="nav-label">Main</div>
 
-          {/* Dashboard — admin only */}
           {isAdmin && (
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-            >
+            <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
               <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="3"  y="3"  width="7" height="7" rx="1"/>
+                <rect x="14" y="3"  width="7" height="7" rx="1"/>
+                <rect x="3"  y="14" width="7" height="7" rx="1"/>
                 <rect x="14" y="14" width="7" height="7" rx="1"/>
               </svg>
               Dashboard
             </NavLink>
           )}
 
-          {/* Visitor Log — all roles */}
-          <NavLink
-            to="/visitor-log"
-            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-          >
+          <NavLink to="/visitor-log" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="9" cy="7" r="4"/>
@@ -226,42 +217,29 @@ function NavBar() {
             Visitor Log
           </NavLink>
 
-          {/* Add Visitor — all roles */}
-          <NavLink
-            to="/add-visitor"
-            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-          >
+          <NavLink to="/add-visitor" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/>
               <line x1="12" y1="8" x2="12" y2="16"/>
-              <line x1="8" y1="12" x2="16" y2="12"/>
+              <line x1="8"  y1="12" x2="16" y2="12"/>
             </svg>
             Add Visitor
           </NavLink>
 
           <div className="nav-label" style={{ marginTop: '16px' }}>Account</div>
 
-          {/* Notifications Bell — security guard only */}
           {isGuard && (
-            <button
-              className="nav-item nav-item-btn"
-              onClick={openNotifPanel}
-            >
+            <button className="nav-item nav-item-btn" onClick={openNotifPanel}>
               <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
               Notifications
-              {/* Red dot — only shown when there's an unread notification */}
               {hasUnread && <span className="notif-dot" aria-label="Unread notification" />}
             </button>
           )}
 
-          {/* Profile — all roles */}
-          <NavLink
-            to="/profile"
-            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-          >
+          <NavLink to="/profile" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
@@ -279,15 +257,14 @@ function NavBar() {
               <div className="user-name">
                 {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User' : 'User'}
               </div>
-              <div className="user-role">
-                {user?.role || 'Unknown'}
-              </div>
+              <div className="user-role">{user?.role || 'Unknown'}</div>
             </div>
           </div>
           <button className="logout-btn" onClick={requestLogout}>Logout</button>
         </div>
       </aside>
 
+      {/* Logout confirmation banner */}
       {showBanner && (
         <div className="logout-banner">
           <div className="logout-banner-inner">
@@ -307,7 +284,6 @@ function NavBar() {
           onClick={(e) => e.target === e.currentTarget && setShowSyncNotif(false)}
         >
           <div className="sync-notif-modal">
-            {/* Close button */}
             <button
               className="sync-notif-dismiss"
               onClick={() => setShowSyncNotif(false)}
@@ -325,6 +301,11 @@ function NavBar() {
 
             <div className="sync-notif-title">Notifications</div>
 
+            {/* Error message */}
+            {respondError && (
+              <div className="sync-notif-error">{respondError}</div>
+            )}
+
             {syncHistory.length === 0 ? (
               <div className="sync-notif-empty">No notifications yet.</div>
             ) : (
@@ -334,7 +315,7 @@ function NavBar() {
                     <div className="sync-history-header">
                       <span className="sync-history-name">{entry.requestedByName}</span>
                       <span className={`sync-history-badge badge-${entry.status.toLowerCase()}`}>
-                        {entry.status === 'PENDING' && '⏳ Pending'}
+                        {entry.status === 'PENDING'  && '⏳ Pending'}
                         {entry.status === 'ACCEPTED' && '✓ Accepted'}
                         {entry.status === 'DECLINED' && '✕ Declined'}
                       </span>
@@ -343,18 +324,26 @@ function NavBar() {
                       Requested access to your visitor log data
                     </div>
                     <div className="sync-history-time">
-                      {entry.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {entry.timestamp instanceof Date
+                        ? entry.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      }
                       {' · '}
-                      {entry.timestamp.toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                      {entry.timestamp instanceof Date
+                        ? entry.timestamp.toLocaleDateString([], { month: 'short', day: 'numeric' })
+                        : new Date(entry.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })
+                      }
                       {entry.respondedAt && (
                         <span className="sync-history-responded">
                           {' · Responded '}
-                          {entry.respondedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {entry.respondedAt instanceof Date
+                            ? entry.respondedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : new Date(entry.respondedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          }
                         </span>
                       )}
                     </div>
 
-                    {/* Action buttons — only shown while PENDING */}
                     {entry.status === 'PENDING' && (
                       <div className="sync-notif-actions" style={{ marginTop: 12 }}>
                         <button

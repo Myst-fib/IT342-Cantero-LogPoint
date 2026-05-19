@@ -11,7 +11,6 @@ import RadioButtonUncheckedOutlinedIcon from '@mui/icons-material/RadioButtonUnc
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import PieChartOutlineOutlinedIcon from '@mui/icons-material/PieChartOutlineOutlined';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import SyncIcon from '@mui/icons-material/Sync';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -48,8 +47,6 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     daily: 0, total: 0, activeNow: 0, completedToday: 0,
     weeklyData: [], purposeDistribution: {}, hourlyTraffic: [],
-    thisMonthCount: 0, lastMonthCount: 0, ytd: 0,
-    momGrowth: null, avgPerDay: 0,
   });
   const [loading,       setLoading]       = useState(true);
   const [banner,        setBanner]        = useState({ show: false, message: '', type: 'success' });
@@ -72,8 +69,6 @@ const Dashboard = () => {
     syncedPage       * LOGS_PER_PAGE
   );
 
-  // Ref so the poll callback always sees current ownLogs without being
-  // recreated on every render (avoids resetting the interval)
   const ownLogsRef    = useRef(ownLogs);
   const syncedLogsRef = useRef(syncedLogs);
   useEffect(() => { ownLogsRef.current    = ownLogs;    }, [ownLogs]);
@@ -145,31 +140,14 @@ const Dashboard = () => {
       count: logs.filter(l => new Date(l.timeIn).getHours() === i).length,
     }));
 
-    const now            = new Date();
-    const thisMonthCount = logs.filter(l => {
-      const d = new Date(l.timeIn);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }).length;
-    const lastM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthCount = logs.filter(l => {
-      const d = new Date(l.timeIn);
-      return d.getMonth() === lastM.getMonth() && d.getFullYear() === lastM.getFullYear();
-    }).length;
-    const ytd        = logs.filter(l => new Date(l.timeIn).getFullYear() === now.getFullYear()).length;
-    const momGrowth  = lastMonthCount > 0
-      ? parseFloat((((thisMonthCount - lastMonthCount) / lastMonthCount) * 100).toFixed(1))
-      : null;
-    const avgPerDay  = now.getDate() > 0 ? Math.round(thisMonthCount / now.getDate()) : 0;
-
     setStats({
       daily: todayLogs.length, total: logs.length,
       activeNow: activeLogs.length, completedToday: completedToday.length,
       weeklyData, purposeDistribution: purposeCount, hourlyTraffic,
-      thisMonthCount, lastMonthCount, ytd, momGrowth, avgPerDay,
     });
   }, []);
 
-  // ── Fetch own logs (used on mount + by the auto-poll) ─────────────────────
+  // ── Fetch own logs ────────────────────────────────────────────────────────
   const fetchOwnLogs = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
@@ -191,28 +169,25 @@ const Dashboard = () => {
     }
   }, [calculateStats, showBanner]);
 
-  // ── Auto-poll own logs every 15 s so new visitors show in real time ───────
   useEffect(() => {
     setCurrentDate(getPhilippineDate());
-    fetchOwnLogs(false); // initial load (shows spinner)
+    fetchOwnLogs(false);
 
     const id = setInterval(() => {
-      fetchOwnLogs(true); // background refresh (silent, no spinner)
+      fetchOwnLogs(true);
     }, POLL_INTERVAL);
 
     return () => clearInterval(id);
   }, [fetchOwnLogs]);
 
-  // Re-run stats when synced logs change (live poll from SyncGuardModal)
   useEffect(() => {
     if (!loading) calculateStats(getMergedLogs(ownLogsRef.current, syncedLogs));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncedLogs]);
 
-  // Reset pagination if synced logs change
   useEffect(() => { setSyncedPage(1); }, [syncedLogs]);
 
-  // ── Sync callback from SyncGuardModal ─────────────────────────────────────
+  // ── Sync callback ─────────────────────────────────────────────────────────
   const handleSyncComplete = useCallback((logs, guard, guardId, isCancelled, shouldDelete = false) => {
     if (!guardId) return;
 
@@ -328,7 +303,6 @@ const Dashboard = () => {
 
   // ── Derived values ────────────────────────────────────────────────────────
   const hourlyChart    = buildHourlyChart();
-  const momPositive    = stats.momGrowth !== null && stats.momGrowth >= 0;
   const activeCount    = syncedLogs.filter(l => l.status === 'ACTIVE').length;
   const completedCount = syncedLogs.filter(l => l.status === 'COMPLETED').length;
   const guardInitial   = syncedGuardInfo?.firstName?.charAt(0).toUpperCase() || 'G';
@@ -352,15 +326,28 @@ const Dashboard = () => {
       )}
 
       <div className="dashboard-container">
-        {/* Page Header */}
-         <div className="page-header">
-          <div>
-            <div className="page-title">Dashboard</div>
-            <div className="page-subtitle text-light">{currentDate}</div>
+        {/* ── Hero header banner ─────────────────────────────────────────── */}
+        <div className="page-hero">
+          {/* Left: title + subtitle */}
+          <div className="page-hero-title-block">
+            <div className="page-hero-label">Overview</div>
+            <div className="page-hero-title">Dashboard</div>
+            <div className="page-hero-date">{currentDate}</div>
           </div>
+
+          {/* Right: weather widget (coloured) */}
+          <div className="page-hero-weather">
+            <WeatherWidget customStyles={{
+                conditionText: { color: 'white' },
+                updateText: { color: 'white' }
+              }}
+        />
+          </div>
+        </div>
+
+        {/* ── Action row below hero ──────────────────────────────────────── */}
+        <div className="page-action-row">
           <div className="header-actions">
-            <WeatherWidget />
-            {/* Sync button — always just opens the modal, never triggers a sync */}
             <button className="btn-view-all" onClick={() => setShowSyncModal(true)}>
               <SyncIcon className="btn-icon" />
               {hasSyncedLogs
@@ -424,6 +411,94 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* ── Synced guard logs panel — above charts ─────────────────── */}
+            {hasSyncedLogs ? (
+              <div className="chart-card synced-logs-card" style={{ marginBottom: 24 }}>
+                <div className="chart-header">
+                  <div className="chart-title">
+                    <ShieldOutlinedIcon className="chart-icon" />
+                    Synced Guard Logs
+                    <span className="synced-logs-badge">
+                      {syncedLogs.length} record{syncedLogs.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <button className="chart-clear-btn"
+                    onClick={() => handleSyncComplete(null, null, syncedGuardId, false, true)}>
+                    × Clear
+                  </button>
+                </div>
+
+                <div className="synced-guard-section">
+                  <div className="synced-guard-header">
+                    <div className="synced-guard-avatar">{guardInitial}</div>
+                    <div className="synced-guard-meta">
+                      <span className="synced-guard-name">{guardName}</span>
+                      <span className="synced-guard-sub">
+                        {syncedLogs.length} log{syncedLogs.length !== 1 ? 's' : ''}&nbsp;·&nbsp;
+                        <span className="synced-count-active">{activeCount} active</span>
+                        &nbsp;·&nbsp;
+                        <span className="synced-count-done">{completedCount} completed</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="synced-logs-table">
+                    <div className="slt-head">
+                      <span>Visitor</span>
+                      <span>Purpose</span>
+                      <span>Status</span>
+                    </div>
+                    {pagedSyncedLogs.map((log, idx) => (
+                      <div key={log.id ?? idx} className="slt-row">
+                        <span className="slt-name">{log.visitorName || `Visitor #${log.visitorId}`}</span>
+                        <span className="slt-purpose">{log.purposeName || '—'}</span>
+                        <span className={`slt-status ${log.status?.toLowerCase()}`}>{log.status}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {totalSyncPages > 1 && (
+                    <div className="slt-pagination">
+                      <span className="slt-page-info">
+                        {(syncedPage - 1) * LOGS_PER_PAGE + 1}–{Math.min(syncedPage * LOGS_PER_PAGE, syncedLogs.length)} of {syncedLogs.length}
+                      </span>
+                      <div className="slt-page-btns">
+                        <button
+                          className="slt-page-btn"
+                          onClick={() => setSyncedPage(p => Math.max(1, p - 1))}
+                          disabled={syncedPage === 1}
+                        >
+                          <NavigateBeforeIcon style={{ fontSize: 18 }} />
+                        </button>
+                        <span className="slt-page-num">{syncedPage} / {totalSyncPages}</span>
+                        <button
+                          className="slt-page-btn"
+                          onClick={() => setSyncedPage(p => Math.min(totalSyncPages, p + 1))}
+                          disabled={syncedPage === totalSyncPages}
+                        >
+                          <NavigateNextIcon style={{ fontSize: 18 }} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Empty state — above charts */
+              <div className="chart-card synced-logs-empty" style={{ marginBottom: 24 }}>
+                <div className="synced-empty-inner">
+                  <ShieldOutlinedIcon className="synced-empty-icon" />
+                  <p className="synced-empty-title">No guard logs synced yet</p>
+                  <p className="synced-empty-sub">
+                    Click <strong>Sync Guard Logs</strong> above to pull a security guard's visitor data into the dashboard.
+                  </p>
+                  <button className="sync-btn primary synced-empty-btn" onClick={() => setShowSyncModal(true)}>
+                    <SyncIcon className="btn-icon-sm" /> Sync Guard Logs
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Charts */}
             <div className="charts-grid">
               <div className="chart-card">
@@ -473,143 +548,10 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-
-            {/* Monthly KPIs */}
-            <div className="monthly-section">
-              <div className="section-label">
-                <CalendarMonthOutlinedIcon style={{ fontSize: 16, opacity: 0.7 }} />
-                Monthly Overview
-              </div>
-
-              <div className="monthly-metrics">
-                <div className="monthly-metric">
-                  <div className="monthly-metric-top">
-                    <span className="monthly-metric-label">This Month</span>
-                    {stats.momGrowth !== null && (
-                      <span className={`monthly-badge ${momPositive ? 'pos' : 'neg'}`}>
-                        {momPositive ? '▲' : '▼'} {Math.abs(stats.momGrowth)}%
-                      </span>
-                    )}
-                  </div>
-                  <div className="monthly-metric-value">{stats.thisMonthCount.toLocaleString()}</div>
-                  <div className="monthly-metric-sub">vs {stats.lastMonthCount.toLocaleString()} last month</div>
-                </div>
-
-                <div className="monthly-metric">
-                  <div className="monthly-metric-top"><span className="monthly-metric-label">Last Month</span></div>
-                  <div className="monthly-metric-value">{stats.lastMonthCount.toLocaleString()}</div>
-                  <div className="monthly-metric-sub">completed period</div>
-                </div>
-
-                <div className="monthly-metric">
-                  <div className="monthly-metric-top"><span className="monthly-metric-label">Year to Date</span></div>
-                  <div className="monthly-metric-value">{stats.ytd.toLocaleString()}</div>
-                  <div className="monthly-metric-sub">total visitors {new Date().getFullYear()}</div>
-                </div>
-
-                <div className="monthly-metric">
-                  <div className="monthly-metric-top"><span className="monthly-metric-label">Daily Average</span></div>
-                  <div className="monthly-metric-value">{stats.avgPerDay}</div>
-                  <div className="monthly-metric-sub">visitors / day this month</div>
-                </div>
-              </div>
-
-              {/* ── Synced guard logs panel ─────────────────────────────────── */}
-              {hasSyncedLogs ? (
-                <div className="chart-card synced-logs-card">
-                  <div className="chart-header">
-                    <div className="chart-title">
-                      <ShieldOutlinedIcon className="chart-icon" />
-                      Synced Guard Logs
-                      <span className="synced-logs-badge">
-                        {syncedLogs.length} record{syncedLogs.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    <button className="chart-clear-btn"
-                      onClick={() => handleSyncComplete(null, null, syncedGuardId, false, true)}>
-                      × Clear
-                    </button>
-                  </div>
-
-                  <div className="synced-guard-section">
-                    {/* Guard info row */}
-                    <div className="synced-guard-header">
-                      <div className="synced-guard-avatar">{guardInitial}</div>
-                      <div className="synced-guard-meta">
-                        <span className="synced-guard-name">{guardName}</span>
-                        <span className="synced-guard-sub">
-                          {syncedLogs.length} log{syncedLogs.length !== 1 ? 's' : ''}&nbsp;·&nbsp;
-                          <span className="synced-count-active">{activeCount} active</span>
-                          &nbsp;·&nbsp;
-                          <span className="synced-count-done">{completedCount} completed</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Logs table — paginated */}
-                    <div className="synced-logs-table">
-                      <div className="slt-head">
-                        <span>Visitor</span>
-                        <span>Purpose</span>
-                        <span>Status</span>
-                      </div>
-                      {pagedSyncedLogs.map((log, idx) => (
-                        <div key={log.id ?? idx} className="slt-row">
-                          <span className="slt-name">{log.visitorName || `Visitor #${log.visitorId}`}</span>
-                          <span className="slt-purpose">{log.purposeName || '—'}</span>
-                          <span className={`slt-status ${log.status?.toLowerCase()}`}>{log.status}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Pagination controls — only shown when > 10 records */}
-                    {totalSyncPages > 1 && (
-                      <div className="slt-pagination">
-                        <span className="slt-page-info">
-                          {(syncedPage - 1) * LOGS_PER_PAGE + 1}–{Math.min(syncedPage * LOGS_PER_PAGE, syncedLogs.length)} of {syncedLogs.length}
-                        </span>
-                        <div className="slt-page-btns">
-                          <button
-                            className="slt-page-btn"
-                            onClick={() => setSyncedPage(p => Math.max(1, p - 1))}
-                            disabled={syncedPage === 1}
-                          >
-                            <NavigateBeforeIcon style={{ fontSize: 18 }} />
-                          </button>
-                          <span className="slt-page-num">{syncedPage} / {totalSyncPages}</span>
-                          <button
-                            className="slt-page-btn"
-                            onClick={() => setSyncedPage(p => Math.min(totalSyncPages, p + 1))}
-                            disabled={syncedPage === totalSyncPages}
-                          >
-                            <NavigateNextIcon style={{ fontSize: 18 }} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                /* Empty state */
-                <div className="chart-card synced-logs-empty">
-                  <div className="synced-empty-inner">
-                    <ShieldOutlinedIcon className="synced-empty-icon" />
-                    <p className="synced-empty-title">No guard logs synced yet</p>
-                    <p className="synced-empty-sub">
-                      Click <strong>Sync Guard Logs</strong> above to pull a security guard's visitor data into the dashboard.
-                    </p>
-                    <button className="sync-btn primary synced-empty-btn" onClick={() => setShowSyncModal(true)}>
-                      <SyncIcon className="btn-icon-sm" /> Sync Guard Logs
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
           </>
         )}
       </div>
 
-      {/* Modal — only rendered when open; does NOT trigger a sync on open */}
       {showSyncModal && (
         <SyncGuardModal
           onClose={() => setShowSyncModal(false)}
@@ -622,4 +564,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Dashboard; 

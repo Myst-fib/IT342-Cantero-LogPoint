@@ -124,6 +124,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
         const res  = await fetch(`${API}/api/sync/status/${gId}`, { credentials: 'include' });
         if (!res.ok) return;
         const data = await res.json();
+        console.log('[POLL STATUS]', data);
 
         if (data.status === 'ACCEPTED') {
           clearInterval(pollRef.current);

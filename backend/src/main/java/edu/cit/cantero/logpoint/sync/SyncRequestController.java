@@ -30,6 +30,16 @@ public class SyncRequestController {
     // guardId → true when a live sync is actively polling
     private static final Set<Long> activeSyncs = ConcurrentHashMap.newKeySet();
 
+    // ── Helper: safely extract Long id from UserDTO ───────────────────────────
+    // Prevents subtle Integer vs Long type-mismatch issues in ConcurrentHashMap lookups
+    private Long resolveId(UserDTO user) {
+        if (user == null) return null;
+        Object raw = user.getId();
+        if (raw instanceof Long)    return (Long) raw;
+        if (raw instanceof Integer) return ((Integer) raw).longValue();
+        return Long.valueOf(String.valueOf(raw));
+    }
+
     // ── GET /api/sync/guards ──────────────────────────────────────────────────
     @GetMapping("/guards")
     public ResponseEntity<?> getGuards(HttpSession session) {
@@ -88,6 +98,9 @@ public class SyncRequestController {
         req.put("timestamp",       System.currentTimeMillis());
         pendingRequests.put(guardId, req);
 
+        System.out.println("[REQUEST] Stored pending for guardId=" + guardId
+            + " | map keys now=" + pendingRequests.keySet());
+
         return ResponseEntity.ok(Map.of("message", "Sync request sent", "guardId", guardId));
     }
 
@@ -97,7 +110,12 @@ public class SyncRequestController {
         UserDTO user = (UserDTO) session.getAttribute("user");
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
-        Map<String, Object> req = pendingRequests.get(user.getId());
+        Long guardId = resolveId(user);
+
+        System.out.println("[MY-REQUEST] guardId=" + guardId
+            + " | pendingRequests keys=" + pendingRequests.keySet());
+
+        Map<String, Object> req = pendingRequests.get(guardId);
         if (req == null) return ResponseEntity.ok(Map.of("status", "NONE"));
         return ResponseEntity.ok(req);
     }
@@ -109,19 +127,31 @@ public class SyncRequestController {
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
         String decision = body.get("decision");
-        if (decision == null) return ResponseEntity.badRequest().body("Missing decision");
+        if (decision == null || decision.isBlank())
+            return ResponseEntity.badRequest().body("Missing decision");
 
-        Map<String, Object> req = pendingRequests.get(user.getId());
-        if (req == null) return ResponseEntity.status(404).body("No pending request");
+        Long guardId = resolveId(user);
+
+        System.out.println("[RESPOND] guardId=" + guardId
+            + " | decision=" + decision
+            + " | pendingRequests keys=" + pendingRequests.keySet());
+
+        Map<String, Object> req = pendingRequests.get(guardId);
+        if (req == null) {
+            System.out.println("[RESPOND] ERROR — no pending request found for guardId=" + guardId);
+            return ResponseEntity.status(404).body("No pending request found for this guard");
+        }
 
         req.put("status", decision.toUpperCase());
-        pendingRequests.put(user.getId(), req);
+        pendingRequests.put(guardId, req);
+
+        System.out.println("[RESPOND] Updated status to " + decision.toUpperCase()
+            + " for guardId=" + guardId);
 
         return ResponseEntity.ok(Map.of("message", "Response recorded", "status", decision));
     }
 
     // ── GET /api/sync/logs/{guardId} ─────────────────────────────────────────
-    // Initial snapshot – fetches guard's current visit logs including latest host/purpose
     @GetMapping("/logs/{guardId}")
     public ResponseEntity<?> getGuardLogs(@PathVariable Long guardId, HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("user");
@@ -136,15 +166,11 @@ public class SyncRequestController {
         Optional<User> guardOpt = userRepository.findById(guardId);
         if (guardOpt.isEmpty()) return ResponseEntity.status(404).body("Guard not found");
 
-        // getVisitLogsByUser already joins visitor + purpose via VisitLog entity
         List<VisitLogDTO> logs = visitLogService.getVisitLogsByUser(guardOpt.get().getEmail());
         return ResponseEntity.ok(logs);
     }
 
     // ── GET /api/sync/live/{guardId} ─────────────────────────────────────────
-    // Live poll: returns guard's CURRENT logs (reflects edits to host/purpose too)
-    // Only responds while activeSyncs contains guardId.
-    // After cancel, returns 404 → frontend stops polling and keeps frozen snapshot.
     @GetMapping("/live/{guardId}")
     public ResponseEntity<?> getLiveLogs(@PathVariable Long guardId, HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("user");
@@ -173,12 +199,12 @@ public class SyncRequestController {
         activeSyncs.add(guardId);
         pendingRequests.remove(guardId);
 
+        System.out.println("[ACTIVATE] Live sync started for guardId=" + guardId);
+
         return ResponseEntity.ok(Map.of("message", "Sync activated", "guardId", guardId));
     }
 
     // ── POST /api/sync/cancel/{guardId} ──────────────────────────────────────
-    // Cancels the live feed. Data already displayed stays on admin side (frozen).
-    // Subsequent /live calls will 404, so the frontend polling loop terminates.
     @PostMapping("/cancel/{guardId}")
     public ResponseEntity<?> cancelSync(@PathVariable Long guardId, HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("user");
@@ -189,9 +215,11 @@ public class SyncRequestController {
         activeSyncs.remove(guardId);
         pendingRequests.remove(guardId);
 
+        System.out.println("[CANCEL] Sync cancelled for guardId=" + guardId);
+
         return ResponseEntity.ok(Map.of(
-            "message",  "Sync cancelled – live feed stopped. Existing snapshot retained.",
-            "guardId",  guardId
+            "message", "Sync cancelled – live feed stopped. Existing snapshot retained.",
+            "guardId", guardId
         ));
     }
 

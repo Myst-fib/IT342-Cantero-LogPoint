@@ -41,7 +41,7 @@
 
 .weather-desc {
   font-size: 12px;
-  color: var(--text-light);
+  color: rgba(255, 255, 255, 0.75);
   text-transform: capitalize;
   font-family: 'DM Sans', sans-serif;
 }
@@ -92,7 +92,7 @@
 
 .weather-updated {
   font-size: 11px;
-  color: var(--text-light);
+  color: rgba(255, 255, 255, 0.75);
   font-family: 'DM Sans', sans-serif;
 }
 
