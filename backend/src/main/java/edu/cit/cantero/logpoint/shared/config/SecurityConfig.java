@@ -135,9 +135,10 @@ public class SecurityConfig {
 
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",   // React web app
-            "http://localhost:*",      // any local port (iOS sim, dev tools)
-            "http://10.0.2.2:*",       // Android Emulator → host machine
-            "http://192.168.*.*:*"     // real device on same LAN (adjust subnet if needed)
+            "http://localhost:*",      // any local port
+            "http://10.0.2.2:*",       // Android Emulator
+            "http://192.168.*.*:*",    // LAN devices (192.168.x.x subnet)
+            "http://10.*.*.*:*"        // LAN devices (10.x.x.x subnet) ← ADD THIS
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
