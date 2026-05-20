@@ -11,6 +11,7 @@ import com.example.logpoint.R
 import com.example.logpoint.utils.SessionManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.button.MaterialButton
 
 class GuardDashboardActivity : AppCompatActivity() {
 
@@ -26,9 +27,9 @@ class GuardDashboardActivity : AppCompatActivity() {
                 setContentView(R.layout.activity_guard_dashboard)
 
                 sessionManager = SessionManager(this)
-                toolbar      = findViewById(R.id.toolbar)
-                bottomNav    = findViewById(R.id.bottomNav)
-                contentFrame = findViewById(R.id.contentFrame)
+                toolbar        = findViewById(R.id.toolbar)
+                bottomNav      = findViewById(R.id.bottomNav)
+                contentFrame   = findViewById(R.id.contentFrame)
 
                 setSupportActionBar(toolbar)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
@@ -57,25 +58,21 @@ class GuardDashboardActivity : AppCompatActivity() {
                                 toolbar.title = "Visitor Log"
                                 loadFragment(VisitorLogFragment())
                         }
-
                         R.id.nav_add_visitor -> {
                                 toolbar.title = "Add Visitor"
                                 loadFragment(AddVisitorFragment())
                         }
-
                         R.id.nav_notifications -> {
                                 toolbar.title = "Notifications"
                                 loadFragment(NotificationsFragment())
                         }
-
                         R.id.nav_profile -> {
                                 toolbar.title = "Profile"
                                 contentFrame.removeAllViews()
                                 val view = layoutInflater.inflate(R.layout.fragment_profile, contentFrame, false)
                                 populateProfile(view)
-                                view.findViewById<com.google.android.material.button.MaterialButton>(
-                                        R.id.btnProfileLogout
-                                ).setOnClickListener { showLogoutDialog() }
+                                view.findViewById<MaterialButton>(R.id.btnProfileLogout)
+                                        .setOnClickListener { showLogoutDialog() }
                                 contentFrame.addView(view)
                         }
                 }
@@ -94,20 +91,21 @@ class GuardDashboardActivity : AppCompatActivity() {
                 val role      = sessionManager.getRole()      ?: "Security Guard"
                 val initial   = firstName.firstOrNull()?.uppercaseChar()?.toString() ?: "U"
                 view.findViewById<TextView>(R.id.tvProfileInitial).text = initial
-                view.findViewById<TextView>(R.id.tvProfileName).text =
-                        "$firstName $lastName".trim().ifEmpty { "User" }
-                view.findViewById<TextView>(R.id.tvProfileRole).text = role
-                view.findViewById<TextView>(R.id.tvProfileEmail).text = email
+                view.findViewById<TextView>(R.id.tvProfileName).text    = "$firstName $lastName".trim().ifEmpty { "User" }
+                view.findViewById<TextView>(R.id.tvProfileRole).text    = role
+                view.findViewById<TextView>(R.id.tvProfileEmail).text   = email
         }
 
         fun showNotificationBadge() {
-                bottomNav.getOrCreateBadge(R.id.nav_notifications).apply {
-                        isVisible = true
-                        backgroundColor = resources.getColor(R.color.error, theme)
+                runOnUiThread {
+                        bottomNav.getOrCreateBadge(R.id.nav_notifications).apply {
+                                isVisible = true
+                                backgroundColor = resources.getColor(R.color.error, theme)
+                        }
                 }
         }
 
-        private fun clearNotificationBadge() {
+        fun clearNotificationBadge() {
                 bottomNav.removeBadge(R.id.nav_notifications)
         }
 

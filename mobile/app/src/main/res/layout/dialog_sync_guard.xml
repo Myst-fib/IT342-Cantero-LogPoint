@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Search -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="@drawable/input_background"
+        android:padding="10dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@android:drawable/ic_menu_search"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:alpha="0.4" />
+
+        <EditText
+            android:id="@+id/etGuardSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="26dp"
+            android:hint="Search by name or email..."
+            android:background="@null"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:inputType="text"
+            android:textColor="@color/text_dark"
+            android:textColorHint="@color/text_light" />
+    </RelativeLayout>
+
+    <!-- Info banner (shown when a sync is active) -->
+    <TextView
+        android:id="@+id/tvSyncInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Only one guard can be synced at a time."
+        android:textSize="12sp"
+        android:textColor="@color/primary_dark"
+        android:background="@drawable/sync_info_bg"
+        android:padding="10dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <!-- Error -->
+    <TextView
+        android:id="@+id/tvSyncError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/error"
+        android:background="@drawable/error_banner_bg"
+        android:padding="10dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <!-- Loading -->
+    <ProgressBar
+        android:id="@+id/progressGuards"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- Guard list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerGuards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="320dp"
+        android:nestedScrollingEnabled="false"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false" />
+
+    <!-- Footer count -->
+    <TextView
+        android:id="@+id/tvGuardCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 guards found"
+        android:textSize="12sp"
+        android:textColor="@color/text_light"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="8dp" />
+
+</LinearLayout>

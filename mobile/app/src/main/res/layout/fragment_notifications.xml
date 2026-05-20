@@ -1,35 +1,227 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/bg_light"
-    android:padding="16dp"
-    android:gravity="center">
+    android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="🔔"
-        android:textSize="48sp"
-        android:layout_marginBottom="16dp" />
-
+    <!-- Header -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Notifications"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/primary_dark"
-        android:layout_marginBottom="8dp" />
+        android:textColor="@color/text_dark"
+        android:layout_marginBottom="4dp" />
 
     <TextView
-        android:id="@+id/tvNoNotifications"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No notifications yet."
-        android:textSize="14sp"
+        android:text="Sync requests from administrators"
+        android:textSize="13sp"
         android:textColor="@color/text_light"
-        android:gravity="center" />
+        android:layout_marginBottom="20dp" />
+
+    <!-- Loading indicator (only on first load) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- Error message -->
+    <TextView
+        android:id="@+id/tvError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/text_light"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Sync Request Card (shown when PENDING / ACCEPTED / DECLINED) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardSyncRequest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Icon + title row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <!-- Bell icon circle -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:layout_marginEnd="14dp"
+                    app:cardCornerRadius="23dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#1A004aad">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🔔"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sync Request"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_dark" />
+
+                    <TextView
+                        android:id="@+id/tvRequestStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pending your response"
+                        android:textSize="12sp"
+                        android:textColor="@color/warning"
+                        android:layout_marginTop="2dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Message -->
+            <TextView
+                android:id="@+id/tvAdminName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="An administrator is requesting access to your visitor logs."
+                android:textSize="14sp"
+                android:textColor="@color/text_medium"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Description -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="They will be able to view your visitor records in real-time on their dashboard."
+                android:textSize="12sp"
+                android:textColor="@color/text_light"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_light"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Action buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDecline"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Decline"
+                    android:textSize="14sp"
+                    android:textColor="@color/error"
+                    android:backgroundTint="@color/white"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeColor="@color/error"
+                    app:strokeWidth="1.5dp"
+                    app:cornerRadius="10dp"
+                    android:stateListAnimator="@null" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccept"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Accept"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/gradient_button"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="10dp"
+                    android:stateListAnimator="@null" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Empty state (no notifications) -->
+    <LinearLayout
+        android:id="@+id/layoutNoNotifications"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="48dp"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔕"
+            android:textSize="48sp"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No notifications"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sync requests from administrators\nwill appear here."
+            android:textSize="13sp"
+            android:textColor="@color/text_light"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.4" />
+
+    </LinearLayout>
 
 </LinearLayout>

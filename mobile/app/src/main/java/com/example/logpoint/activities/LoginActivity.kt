@@ -112,8 +112,9 @@ class LoginActivity : AppCompatActivity() {
                         showError("Login failed: empty response")
                     }
                 } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Invalid credentials"
-                    showError(errorMsg)
+                    val errorBody = response.errorBody()?.string() ?: "empty error body"
+                    val code = response.code()
+                    showError("HTTP $code: $errorBody")
                 }
             } catch (e: IOException) {
                 showError("Network error: cannot reach server.\nCheck your connection or BASE_URL in RetrofitClient.")

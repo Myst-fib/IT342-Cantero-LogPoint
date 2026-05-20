@@ -7,6 +7,8 @@ import com.example.logpoint.models.UserResponse
 import com.example.logpoint.models.VisitLogResponse
 import com.example.logpoint.models.VisitorRequest
 import com.example.logpoint.models.VisitorResponse
+import com.example.logpoint.models.SyncRespondRequest
+import com.google.gson.JsonObject
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -53,4 +55,32 @@ interface ApiService {
 
     @DELETE("api/visit-logs/{id}")
     suspend fun deleteVisitLog(@Path("id") id: Long): Response<Unit>
+
+    // ── Sync ──
+    @GET("api/sync/guards")
+    suspend fun getSyncGuards(): Response<List<JsonObject>>
+
+    @POST("api/sync/request/{guardId}")
+    suspend fun requestSync(@Path("guardId") guardId: Long): Response<JsonObject>
+
+    @GET("api/sync/status/{guardId}")
+    suspend fun getSyncStatus(@Path("guardId") guardId: Long): Response<JsonObject>
+
+    @GET("api/sync/logs/{guardId}")
+    suspend fun getSyncLogs(@Path("guardId") guardId: Long): Response<List<VisitLogResponse>>
+
+    @POST("api/sync/activate/{guardId}")
+    suspend fun activateSync(@Path("guardId") guardId: Long): Response<JsonObject>
+
+    @GET("api/sync/live/{guardId}")
+    suspend fun getLiveLogs(@Path("guardId") guardId: Long): Response<List<VisitLogResponse>>
+
+    @POST("api/sync/cancel/{guardId}")
+    suspend fun cancelSync(@Path("guardId") guardId: Long): Response<JsonObject>
+
+    @GET("api/sync/my-request")
+    suspend fun getMyRequest(): Response<JsonObject>
+
+    @POST("api/sync/respond")
+    suspend fun respondToSync(@Body request: SyncRespondRequest): Response<JsonObject>
 }

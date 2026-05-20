@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/sync")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class SyncRequestController {
 
     @Autowired

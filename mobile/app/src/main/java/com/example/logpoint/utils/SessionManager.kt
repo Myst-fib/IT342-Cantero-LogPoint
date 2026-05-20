@@ -31,6 +31,7 @@ class SessionManager(context: Context) {
     }
 
     fun isLoggedIn(): Boolean  = prefs.getBoolean(KEY_IS_LOGGED_IN, false)
+    fun getUserId(): Long      = prefs.getLong(KEY_USER_ID, -1L)
     fun getEmail(): String?    = prefs.getString(KEY_EMAIL,      null)
     fun getFirstName(): String? = prefs.getString(KEY_FIRST_NAME, null)
     fun getLastName(): String?  = prefs.getString(KEY_LAST_NAME,  null)

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_light"
@@ -16,116 +17,361 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            xmlns:app="http://schemas.android.com/apk/res-auto">
+            app:cardElevation="4dp">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:background="@drawable/gradient_button"
-                android:padding="24dp">
+                android:padding="20dp">
 
-                <TextView
-                    android:id="@+id/tvWelcomeName"
+                <LinearLayout
+                    android:id="@+id/llWelcomeText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Welcome back!"
+                    android:orientation="vertical"
+                    android:layout_centerVertical="true">
+
+                    <TextView
+                        android:id="@+id/tvWelcomeName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Welcome back!"
+                        android:textColor="@color/white"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvWelcomeRole"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Office Administrator"
+                        android:textColor="#CCffffff"
+                        android:textSize="12sp"
+                        android:layout_marginTop="2dp" />
+
+                    <TextView
+                        android:id="@+id/tvWelcomeDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textColor="#99ffffff"
+                        android:textSize="11sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSyncGuard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SYNC GUARD"
+                    android:textSize="11sp"
                     android:textColor="@color/white"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    app:backgroundTint="#33ffffff"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="8dp" />
 
-                <TextView
-                    android:id="@+id/tvWelcomeRole"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Office Administrator"
-                    android:textColor="#CCffffff"
-                    android:textSize="13sp"
-                    android:layout_marginTop="4dp" />
-
-            </LinearLayout>
+            </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Stats row -->
+        <!-- Section: Overview -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Overview"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Stats Row 1: Today + Total -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="10dp">
 
-            <!-- Total Visitors -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="6dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
+                app:cardElevation="3dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
-                    <TextView
-                        android:id="@+id/tvTotalVisitors"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="—"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/primary_dark" />
+                    android:padding="14dp">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Visitors"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_light" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Today -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
+                        android:text="TODAY"
+                        android:textSize="10sp"
+                        android:textColor="@color/text_light"
+                        android:letterSpacing="0.08" />
                     <TextView
                         android:id="@+id/tvTodayVisitors"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="—"
+                        android:text="0"
                         android:textSize="28sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary_light" />
+                        android:textColor="@color/primary_dark"
+                        android:layout_marginTop="2dp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Today"
-                        android:textSize="12sp"
+                        android:text="Visitors"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_light" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="3dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TOTAL"
+                        android:textSize="10sp"
+                        android:textColor="@color/text_light"
+                        android:letterSpacing="0.08" />
+                    <TextView
+                        android:id="@+id/tvTotalVisitors"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary_light"
+                        android:layout_marginTop="2dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All Time"
+                        android:textSize="11sp"
                         android:textColor="@color/text_light" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
+        <!-- Stats Row 2: Active + Completed -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="3dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ACTIVE"
+                        android:textSize="10sp"
+                        android:textColor="@color/text_light"
+                        android:letterSpacing="0.08" />
+                    <TextView
+                        android:id="@+id/tvActiveVisitors"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="#1D9E75"
+                        android:layout_marginTop="2dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="On Premises"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_light" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="3dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="COMPLETED"
+                        android:textSize="10sp"
+                        android:textColor="@color/text_light"
+                        android:letterSpacing="0.08" />
+                    <TextView
+                        android:id="@+id/tvCompletedToday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary_dark"
+                        android:layout_marginTop="2dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Today"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_light" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+        <!-- Synced Guard Logs Section (hidden by default) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardSyncedLogs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:id="@+id/tvSyncedLogsTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="🛡 Synced Guard Logs"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_dark" />
+
+                    <TextView
+                        android:id="@+id/tvSyncedLogsCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 records"
+                        android:textSize="11sp"
+                        android:textColor="@color/white"
+                        android:background="@drawable/badge_background"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvClearSync"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="× Clear"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_light"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+
+                <!-- Guard info row -->
+                <LinearLayout
+                    android:id="@+id/llGuardInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:id="@+id/tvGuardInitial"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:gravity="center"
+                        android:text="G"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/avatar_background"
+                        android:layout_marginEnd="10dp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvGuardName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Guard Name"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_dark" />
+
+                        <TextView
+                            android:id="@+id/tvGuardLogMeta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 logs"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_light" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Log rows container -->
+                <LinearLayout
+                    android:id="@+id/llSyncedLogRows"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- Quick Actions -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Quick Actions"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="@color/text_dark"
             android:layout_marginBottom="12dp" />
@@ -144,8 +390,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
+                app:cardElevation="3dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -169,8 +414,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="3dp"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
+                app:cardElevation="3dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
