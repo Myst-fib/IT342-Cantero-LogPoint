@@ -361,16 +361,17 @@ function VisitorLog() {
       <div className="visitor-log-container">
 
         {/* Page Header */}
-        <div className="page-header">
-          <div>
-            <div className="page-title">Visit Logs</div>
-            <div className="page-subtitle text-light">Real-time visitor check-in & check-out records</div>
-          </div>
-          <button className="btn-refresh" onClick={() => fetchVisitLogs(true)} disabled={refreshing}>
-            <RefreshOutlinedIcon className={`refresh-icon ${refreshing ? 'spinning' : ''}`} />
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
+      <div className="vl-page-hero">
+        <div className="vl-hero-title-block">
+          <div className="vl-hero-label">Records</div>
+          <div className="vl-hero-title">Visit Logs</div>
+          <div className="vl-hero-date">Real-time visitor check-in &amp; check-out records &nbsp;·&nbsp; {currentDate}</div>
         </div>
+        <button className="vl-hero-refresh" onClick={() => fetchVisitLogs(true)} disabled={refreshing}>
+          <RefreshOutlinedIcon className={`refresh-icon ${refreshing ? 'spinning' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
 
         {/* Synced guard banner */}
         {syncedGuard && (

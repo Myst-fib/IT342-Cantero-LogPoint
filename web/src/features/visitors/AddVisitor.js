@@ -177,10 +177,11 @@ function AddVisitor() {
       )}
 
       <div className="add-visitor-container">
-        <div className="page-header">
-          <div>
-            <div className="page-title">Add New Visitor</div>
-            <div className="page-subtitle text-light">Fill in the visitor details below</div>
+        <div className="av-page-hero">
+          <div className="av-hero-title-block">
+            <div className="av-hero-label">Check-in</div>
+            <div className="av-hero-title">Add New Visitor</div>
+            <div className="av-hero-date">Fill in the visitor details below &nbsp;·&nbsp; {currentDate}</div>
           </div>
         </div>
 
