@@ -4,42 +4,65 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_light"
-    android:padding="16dp">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- Welcome Card -->
+        <!-- ── Hero Banner ────────────────────────────────────────────── -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/gradient_button"
-                android:padding="20dp">
+                android:background="@drawable/gradient_hero"
+                android:padding="22dp">
 
+                <!-- Decorative circles -->
+                <View
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:background="@drawable/circle_overlay"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="-40dp"
+                    android:layout_marginEnd="-20dp"
+                    android:alpha="0.15" />
+
+                <!-- Left: label + name + role + date -->
                 <LinearLayout
-                    android:id="@+id/llWelcomeText"
+                    android:id="@+id/llHeroLeft"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:layout_centerVertical="true">
 
                     <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="OVERVIEW"
+                        android:textColor="#99ffffff"
+                        android:textSize="9sp"
+                        android:letterSpacing="0.12"
+                        android:textStyle="bold" />
+
+                    <TextView
                         android:id="@+id/tvWelcomeName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Welcome back!"
+                        android:text="Dashboard"
                         android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
 
                     <TextView
                         android:id="@+id/tvWelcomeRole"
@@ -48,7 +71,7 @@
                         android:text="Office Administrator"
                         android:textColor="#CCffffff"
                         android:textSize="12sp"
-                        android:layout_marginTop="2dp" />
+                        android:layout_marginTop="1dp" />
 
                     <TextView
                         android:id="@+id/tvWelcomeDate"
@@ -57,14 +80,15 @@
                         android:text=""
                         android:textColor="#99ffffff"
                         android:textSize="11sp"
-                        android:layout_marginTop="2dp" />
+                        android:layout_marginTop="1dp" />
                 </LinearLayout>
 
+                <!-- Right: Sync guard button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSyncGuard"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="SYNC GUARD"
+                    android:text="Sync Guard"
                     android:textSize="11sp"
                     android:textColor="@color/white"
                     android:layout_alignParentEnd="true"
@@ -72,28 +96,34 @@
                     app:backgroundTint="#33ffffff"
                     app:strokeColor="@color/white"
                     app:strokeWidth="1dp"
-                    app:cornerRadius="8dp" />
+                    app:cornerRadius="8dp"
+                    app:icon="@drawable/ic_sync"
+                    app:iconSize="14dp"
+                    app:iconTint="@color/white"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp" />
 
             </RelativeLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Section: Overview -->
+        <!-- ── Section label ──────────────────────────────────────────── -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Overview"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/text_dark"
             android:layout_marginBottom="10dp" />
 
-        <!-- Stats Row 1: Today + Total -->
+        <!-- ── Stats Row 1: Today + Total ────────────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="10dp">
 
+            <!-- Today -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -105,14 +135,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TODAY"
-                        android:textSize="10sp"
-                        android:textColor="@color/text_light"
-                        android:letterSpacing="0.08" />
+                    android:padding="16dp">
+                    <!-- Icon row -->
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/stat_icon_bg_blue"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📅"
+                            android:textSize="16sp"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
                     <TextView
                         android:id="@+id/tvTodayVisitors"
                         android:layout_width="wrap_content"
@@ -120,17 +156,26 @@
                         android:text="0"
                         android:textSize="28sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary_dark"
-                        android:layout_marginTop="2dp" />
+                        android:textColor="@color/text_dark" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Visitors"
+                        android:text="Today's Visitors"
                         android:textSize="11sp"
-                        android:textColor="@color/text_light" />
+                        android:textColor="@color/text_light"
+                        android:layout_marginTop="2dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/border_light" android:layout_marginTop="10dp" android:layout_marginBottom="6dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="↑ Daily check-ins"
+                        android:textSize="10sp"
+                        android:textColor="#4CAF50" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Total -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -142,14 +187,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="TOTAL"
-                        android:textSize="10sp"
-                        android:textColor="@color/text_light"
-                        android:letterSpacing="0.08" />
+                    android:padding="16dp">
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/stat_icon_bg_blue"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="👥"
+                            android:textSize="16sp"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
                     <TextView
                         android:id="@+id/tvTotalVisitors"
                         android:layout_width="wrap_content"
@@ -157,26 +207,35 @@
                         android:text="0"
                         android:textSize="28sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary_light"
-                        android:layout_marginTop="2dp" />
+                        android:textColor="@color/text_dark" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="All Time"
+                        android:text="Total Visitors"
                         android:textSize="11sp"
+                        android:textColor="@color/text_light"
+                        android:layout_marginTop="2dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/border_light" android:layout_marginTop="10dp" android:layout_marginBottom="6dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="All time records"
+                        android:textSize="10sp"
                         android:textColor="@color/text_light" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
-        <!-- Stats Row 2: Active + Completed -->
+        <!-- ── Stats Row 2: Active + Completed ───────────────────────── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="20dp">
 
+            <!-- Active -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -188,14 +247,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ACTIVE"
-                        android:textSize="10sp"
-                        android:textColor="@color/text_light"
-                        android:letterSpacing="0.08" />
+                    android:padding="16dp">
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/stat_icon_bg_green"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🟢"
+                            android:textSize="14sp"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
                     <TextView
                         android:id="@+id/tvActiveVisitors"
                         android:layout_width="wrap_content"
@@ -203,17 +267,26 @@
                         android:text="0"
                         android:textSize="28sp"
                         android:textStyle="bold"
-                        android:textColor="#1D9E75"
-                        android:layout_marginTop="2dp" />
+                        android:textColor="@color/text_dark" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="On Premises"
+                        android:text="Active Now"
                         android:textSize="11sp"
+                        android:textColor="@color/text_light"
+                        android:layout_marginTop="2dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/border_light" android:layout_marginTop="10dp" android:layout_marginBottom="6dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="On premises"
+                        android:textSize="10sp"
                         android:textColor="@color/text_light" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Completed -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -225,14 +298,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="COMPLETED"
-                        android:textSize="10sp"
-                        android:textColor="@color/text_light"
-                        android:letterSpacing="0.08" />
+                    android:padding="16dp">
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/stat_icon_bg_blue_light"
+                        android:layout_marginBottom="10dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="✅"
+                            android:textSize="14sp"
+                            android:layout_gravity="center" />
+                    </FrameLayout>
                     <TextView
                         android:id="@+id/tvCompletedToday"
                         android:layout_width="wrap_content"
@@ -240,20 +318,28 @@
                         android:text="0"
                         android:textSize="28sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary_dark"
-                        android:layout_marginTop="2dp" />
+                        android:textColor="@color/text_dark" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Today"
+                        android:text="Completed Today"
                         android:textSize="11sp"
+                        android:textColor="@color/text_light"
+                        android:layout_marginTop="2dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/border_light" android:layout_marginTop="10dp" android:layout_marginBottom="6dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Checked out"
+                        android:textSize="10sp"
                         android:textColor="@color/text_light" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
-        <!-- Synced Guard Logs Section (hidden by default) -->
+        <!-- ── Synced Guard Logs Card (visible when synced) ──────────── -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardSyncedLogs"
             android:layout_width="match_parent"
@@ -266,22 +352,22 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="14dp">
+                android:orientation="vertical">
 
+                <!-- Card header -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="10dp">
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <TextView
-                        android:id="@+id/tvSyncedLogsTitle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="🛡 Synced Guard Logs"
+                        android:text="🛡  Synced Guard Logs"
                         android:textSize="13sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_dark" />
@@ -292,13 +378,13 @@
                         android:layout_height="wrap_content"
                         android:text="0 records"
                         android:textSize="11sp"
-                        android:textColor="@color/white"
-                        android:background="@drawable/badge_background"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
+                        android:textColor="@color/primary_dark"
+                        android:background="@drawable/badge_blue_light"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
                         android:paddingTop="3dp"
                         android:paddingBottom="3dp"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_marginEnd="10dp" />
 
                     <TextView
                         android:id="@+id/tvClearSync"
@@ -307,30 +393,43 @@
                         android:text="× Clear"
                         android:textSize="12sp"
                         android:textColor="@color/text_light"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingTop="5dp"
+                        android:paddingBottom="5dp"
+                        android:background="@drawable/btn_outline_gray"
                         android:clickable="true"
                         android:focusable="true" />
                 </LinearLayout>
 
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/border_light" />
+
                 <!-- Guard info row -->
                 <LinearLayout
-                    android:id="@+id/llGuardInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="10dp">
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="10dp">
 
                     <TextView
                         android:id="@+id/tvGuardInitial"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
                         android:gravity="center"
                         android:text="G"
                         android:textColor="@color/white"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:background="@drawable/avatar_background"
-                        android:layout_marginEnd="10dp" />
+                        android:background="@drawable/avatar_guard"
+                        android:layout_marginEnd="12dp" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -342,7 +441,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Guard Name"
-                            android:textSize="13sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_dark" />
 
@@ -350,28 +449,105 @@
                             android:id="@+id/tvGuardLogMeta"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 logs"
+                            android:text="0 logs · 0 active · 0 completed"
                             android:textSize="11sp"
-                            android:textColor="@color/text_light" />
+                            android:textColor="@color/text_light"
+                            android:layout_marginTop="2dp" />
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Log rows container -->
+                <!-- Log list header -->
                 <LinearLayout
-                    android:id="@+id/llSyncedLogRows"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical" />
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:background="#F7F8FA">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="VISITOR"
+                        android:textSize="10sp" android:textColor="@color/text_light"
+                        android:letterSpacing="0.06" android:textStyle="bold" />
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="PURPOSE"
+                        android:textSize="10sp" android:textColor="@color/text_light"
+                        android:letterSpacing="0.06" android:textStyle="bold" />
+                    <TextView android:layout_width="80dp" android:layout_height="wrap_content"
+                        android:text="STATUS"
+                        android:textSize="10sp" android:textColor="@color/text_light"
+                        android:letterSpacing="0.06" android:textStyle="bold"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- RecyclerView for log rows -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSyncedLogs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:paddingBottom="8dp"
+                    android:clipToPadding="false" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Quick Actions -->
+        <!-- ── Empty sync state card ──────────────────────────────────── -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardSyncedEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:visibility="visible"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="28dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡"
+                    android:textSize="36sp"
+                    android:alpha="0.3"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No guard logs synced yet"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_dark"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tap Sync Guard above to pull a security guard's visitor data into the dashboard."
+                    android:textSize="12sp"
+                    android:textColor="@color/text_light"
+                    android:gravity="center"
+                    android:lineSpacingMultiplier="1.4"
+                    android:layout_marginBottom="16dp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ── Quick Actions ──────────────────────────────────────────── -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Quick Actions"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/text_dark"
             android:layout_marginBottom="12dp" />
@@ -379,7 +555,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardAddVisitor"
@@ -395,13 +572,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:padding="20dp"
                     android:gravity="center">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="➕" android:textSize="28sp" android:layout_marginBottom="8dp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Add Visitor" android:textSize="13sp"
                         android:textColor="@color/text_dark" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Log a new visit" android:textSize="11sp"
+                        android:textColor="@color/text_light" android:layout_marginTop="2dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -419,13 +599,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:padding="20dp"
                     android:gravity="center">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="📋" android:textSize="28sp" android:layout_marginBottom="8dp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                         android:text="Visitor Log" android:textSize="13sp"
                         android:textColor="@color/text_dark" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="View all records" android:textSize="11sp"
+                        android:textColor="@color/text_light" android:layout_marginTop="2dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

@@ -1,7 +1,6 @@
 package com.example.logpoint.activities
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,6 +18,8 @@ import com.example.logpoint.utils.SessionManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,13 +33,14 @@ class AdminDashboardActivity : AppCompatActivity() {
 
     private var currentTab = R.id.nav_dashboard
 
-    // ── Sync state persisted across tab switches ──────────────────────────────
-    private var syncedGuardId: Long      = -1L
-    private var syncedGuardName: String  = ""
-    private var syncedLogs: List<VisitLogResponse> = emptyList()
+    // ── Sync state — backed by SharedPreferences ──────────────────────────────
+    private var syncedGuardId: Long                  = -1L
+    private var syncedGuardName: String              = ""
+    private var syncedLogs: List<VisitLogResponse>   = emptyList()
     private var isSyncActive  = false
     private var isPollPending = false
 
+    private val gson        = Gson()
     private val pollHandler = Handler(Looper.getMainLooper())
     private val liveHandler = Handler(Looper.getMainLooper())
 
@@ -54,12 +56,27 @@ class AdminDashboardActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
+        // ── Restore persisted sync state ──────────────────────────────────
+        restoreSyncState()
+
         showTab(R.id.nav_dashboard)
 
         bottomNav.setOnItemSelectedListener { item ->
             if (item.itemId != currentTab) showTab(item.itemId)
             true
         }
+    }
+
+    // ── Restore sync from SharedPreferences ───────────────────────────────────
+    private fun restoreSyncState() {
+        if (!sessionManager.isSyncActive()) return
+        syncedGuardId   = sessionManager.getSyncGuardId()
+        syncedGuardName = sessionManager.getSyncGuardName()
+        val json        = sessionManager.getSyncLogsJson() ?: return
+        val type        = object : TypeToken<List<VisitLogResponse>>() {}.type
+        syncedLogs      = gson.fromJson(json, type) ?: emptyList()
+        isSyncActive    = syncedLogs.isNotEmpty()
+        if (isSyncActive) startLivePoll(syncedGuardId)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -89,7 +106,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         val firstName = sessionManager.getFirstName() ?: "Admin"
         val lastName  = sessionManager.getLastName()  ?: ""
         view.findViewById<TextView>(R.id.tvWelcomeName).text =
-            "Welcome, ${("$firstName $lastName").trim()}!"
+            "${("$firstName $lastName").trim()}"
         view.findViewById<TextView>(R.id.tvWelcomeRole).text = "Office Administrator"
         view.findViewById<TextView>(R.id.tvWelcomeDate).text = getPhilippineDate()
 
@@ -104,10 +121,13 @@ class AdminDashboardActivity : AppCompatActivity() {
         }
 
         contentFrame.addView(view)
-
         fetchDashboardStats(view)
+
         if (syncedLogs.isNotEmpty()) {
             showSyncedLogsCard(view, syncedLogs, syncedGuardName)
+        } else {
+            view.findViewById<CardView>(R.id.cardSyncedLogs)?.visibility = View.GONE
+            view.findViewById<View>(R.id.cardSyncedEmpty)?.visibility    = View.VISIBLE
         }
     }
 
@@ -125,11 +145,10 @@ class AdminDashboardActivity : AppCompatActivity() {
 
     private fun updateStats(view: View, ownLogs: List<VisitLogResponse>) {
         val allLogs = ownLogs + syncedLogs
-
-        val tz    = TimeZone.getTimeZone("Asia/Manila")
-        val outSdf = SimpleDateFormat("MM/dd/yyyy", Locale.US).also { it.timeZone = tz }
-        val inSdf  = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).also { it.timeZone = tz }
-        val today  = outSdf.format(Date())
+        val tz      = TimeZone.getTimeZone("Asia/Manila")
+        val outSdf  = SimpleDateFormat("MM/dd/yyyy", Locale.US).also { it.timeZone = tz }
+        val inSdf   = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).also { it.timeZone = tz }
+        val today   = outSdf.format(Date())
 
         fun parseDay(s: String?): String? = try {
             s?.let { outSdf.format(inSdf.parse(it.take(19)) ?: return@let null) }
@@ -138,9 +157,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         val todayCount     = allLogs.count { parseDay(it.timeIn) == today }
         val totalCount     = allLogs.size
         val activeCount    = allLogs.count { it.status == "ACTIVE" }
-        val completedToday = allLogs.count {
-            it.status == "COMPLETED" && parseDay(it.timeIn) == today
-        }
+        val completedToday = allLogs.count { it.status == "COMPLETED" && parseDay(it.timeIn) == today }
 
         runOnUiThread {
             view.findViewById<TextView>(R.id.tvTodayVisitors)?.text  = todayCount.toString()
@@ -150,8 +167,9 @@ class AdminDashboardActivity : AppCompatActivity() {
         }
     }
 
-    // ── Show synced guard logs card ───────────────────────────────────────────
+    // ── Synced guard logs card ─────────────────────────────────────────────────
     private fun showSyncedLogsCard(view: View, logs: List<VisitLogResponse>, guardName: String) {
+        view.findViewById<View>(R.id.cardSyncedEmpty)?.visibility     = View.GONE
         val card = view.findViewById<CardView>(R.id.cardSyncedLogs) ?: return
         card.visibility = View.VISIBLE
 
@@ -164,46 +182,14 @@ class AdminDashboardActivity : AppCompatActivity() {
         view.findViewById<TextView>(R.id.tvGuardInitial)?.text = initial
         view.findViewById<TextView>(R.id.tvGuardName)?.text    = guardName
         view.findViewById<TextView>(R.id.tvGuardLogMeta)?.text =
-            "${logs.size} log${if (logs.size != 1) "s" else ""} · $active active · $completed completed"
+            "${logs.size} log${if (logs.size != 1) "s" else ""}  ·  $active active  ·  $completed completed"
 
-        val container = view.findViewById<LinearLayout>(R.id.llSyncedLogRows)
-        container?.removeAllViews()
+        // Update btn to show guard name
+        view.findViewById<MaterialButton>(R.id.btnSyncGuard)?.text = "⟳  $guardName"
 
-        // Header
-        val headerRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, 0, 0, 6) }
-        fun hdr(t: String, w: Float) = TextView(this@AdminDashboardActivity).apply {
-            text = t; textSize = 10f; setTextColor(Color.parseColor("#999999"))
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, w)
-            letterSpacing = 0.06f
-        }
-        headerRow.addView(hdr("VISITOR", 1f))
-        headerRow.addView(hdr("PURPOSE", 0.8f))
-        headerRow.addView(hdr("STATUS", 0.6f))
-        container?.addView(headerRow)
-
-        logs.take(10).forEach { log ->
-            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, 6, 0, 6) }
-            fun cell(t: String, w: Float, color: Int? = null) = TextView(this@AdminDashboardActivity).apply {
-                text = t; textSize = 12f
-                setTextColor(color ?: Color.parseColor("#333333"))
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, w)
-            }
-            val statusColor = when (log.status) {
-                "ACTIVE"    -> Color.parseColor("#1D9E75")
-                "COMPLETED" -> Color.parseColor("#004AAD")
-                else        -> Color.parseColor("#999999")
-            }
-            row.addView(cell(log.visitorName ?: "—", 1f))
-            row.addView(cell(log.purposeName ?: "—", 0.8f))
-            row.addView(cell(log.status ?: "—", 0.6f, statusColor))
-            container?.addView(row)
-
-            container?.addView(View(this).apply {
-                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1)
-                    .also { it.setMargins(0, 2, 0, 2) }
-                setBackgroundColor(Color.parseColor("#F0F0F0"))
-            })
-        }
+        val recycler = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvSyncedLogs)
+        recycler?.adapter = com.example.logpoint.adapters.SyncedLogAdapter(logs)
+        recycler?.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
 
         view.findViewById<TextView>(R.id.tvClearSync)?.setOnClickListener {
             clearSyncedData(view)
@@ -221,7 +207,11 @@ class AdminDashboardActivity : AppCompatActivity() {
         syncedGuardId   = -1L
         syncedGuardName = ""
         syncedLogs      = emptyList()
+        sessionManager.clearSyncState()
+
         view.findViewById<CardView>(R.id.cardSyncedLogs)?.visibility = View.GONE
+        view.findViewById<View>(R.id.cardSyncedEmpty)?.visibility    = View.VISIBLE
+        view.findViewById<MaterialButton>(R.id.btnSyncGuard)?.text   = "Sync Guard"
         fetchDashboardStats(view)
     }
 
@@ -279,11 +269,11 @@ class AdminDashboardActivity : AppCompatActivity() {
                 isPollPending = false
                 return@launch
             }
-            pollForAcceptance(dashView, guardId, guardName)
+            pollForAcceptance(guardId, guardName)
         }
     }
 
-    private fun pollForAcceptance(dashView: View, guardId: Long, guardName: String) {
+    private fun pollForAcceptance(guardId: Long, guardName: String) {
         lateinit var runnable: Runnable
         runnable = Runnable {
             if (!isPollPending) return@Runnable
@@ -291,11 +281,10 @@ class AdminDashboardActivity : AppCompatActivity() {
                 try {
                     val res = RetrofitClient.instance.getSyncStatus(guardId)
                     if (res.isSuccessful) {
-                        val status = res.body()?.get("status")?.asString ?: "NONE"
-                        when (status) {
+                        when (res.body()?.get("status")?.asString ?: "NONE") {
                             "ACCEPTED" -> {
                                 isPollPending = false
-                                collectSyncedLogs(dashView, guardId, guardName)
+                                collectSyncedLogs(guardId, guardName)
                             }
                             "DECLINED" -> {
                                 isPollPending = false
@@ -318,7 +307,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         pollHandler.post(runnable)
     }
 
-    private fun collectSyncedLogs(dashView: View, guardId: Long, guardName: String) {
+    private fun collectSyncedLogs(guardId: Long, guardName: String) {
         lifecycleScope.launch {
             try {
                 val logsRes = RetrofitClient.instance.getSyncLogs(guardId)
@@ -326,8 +315,13 @@ class AdminDashboardActivity : AppCompatActivity() {
                     val logs = logsRes.body() ?: emptyList()
                     try { RetrofitClient.instance.activateSync(guardId) } catch (_: Exception) {}
 
-                    syncedLogs   = logs
-                    isSyncActive = true
+                    syncedLogs      = logs
+                    syncedGuardName = guardName
+                    syncedGuardId   = guardId
+                    isSyncActive    = true
+
+                    // ── Persist ───────────────────────────────────────────
+                    sessionManager.saveSyncState(guardId, guardName, gson.toJson(logs))
 
                     runOnUiThread {
                         Toast.makeText(this@AdminDashboardActivity,
@@ -339,7 +333,6 @@ class AdminDashboardActivity : AppCompatActivity() {
                             fetchDashboardStats(v)
                         }
                     }
-
                     startLivePoll(guardId)
                 } else {
                     runOnUiThread {
@@ -367,6 +360,7 @@ class AdminDashboardActivity : AppCompatActivity() {
                         res.isSuccessful -> {
                             val fresh = res.body() ?: emptyList()
                             syncedLogs = fresh
+                            sessionManager.updateSyncLogs(gson.toJson(fresh))   // keep prefs fresh
                             if (currentTab == R.id.nav_dashboard) {
                                 runOnUiThread {
                                     val v = contentFrame.getChildAt(0) ?: return@runOnUiThread
@@ -427,12 +421,14 @@ class AdminDashboardActivity : AppCompatActivity() {
             .setPositiveButton("Yes, logout") { _, _ ->
                 val gId = syncedGuardId
                 stopPolling()
+                // NOTE: We do NOT clear sync state on logout so it restores on next login.
+                // Call sessionManager.clearSyncState() here only if you want a full wipe.
                 if (gId != -1L && isSyncActive) {
                     lifecycleScope.launch {
                         try { RetrofitClient.instance.cancelSync(gId) } catch (_: Exception) {}
                     }
                 }
-                sessionManager.logout()
+                sessionManager.logout()  // clears login keys; sync keys persist separately
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
             }
@@ -446,10 +442,12 @@ class AdminDashboardActivity : AppCompatActivity() {
         return sdf.format(Date())
     }
 
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         if (currentTab != R.id.nav_dashboard) {
             bottomNav.selectedItemId = R.id.nav_dashboard
         } else {
+            @Suppress("DEPRECATION")
             super.onBackPressed()
         }
     }
