@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/sync")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class SyncRequestController {
 
     @Autowired
@@ -23,14 +24,13 @@ public class SyncRequestController {
     @Autowired
     private VisitLogService visitLogService;
 
-    // guardId → { status, requestedBy, requestedByName, timestamp }
+    // guardId → { status, requestedBy (adminId), requestedByName, requestedByEmail, timestamp }
     private static final Map<Long, Map<String, Object>> pendingRequests = new ConcurrentHashMap<>();
 
-    // guardId → true when a live sync is actively polling
-    private static final Set<Long> activeSyncs = ConcurrentHashMap.newKeySet();
+    // guardId → adminId — only one admin can live-sync a guard at a time
+    private static final Map<Long, Long> activeSyncs = new ConcurrentHashMap<>();
 
     // ── Helper: safely extract Long id from UserDTO ───────────────────────────
-    // Prevents subtle Integer vs Long type-mismatch issues in ConcurrentHashMap lookups
     private Long resolveId(UserDTO user) {
         if (user == null) return null;
         Object raw = user.getId();
@@ -45,6 +45,8 @@ public class SyncRequestController {
         UserDTO user = (UserDTO) session.getAttribute("user");
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
+        Long adminId = resolveId(user);
+
         List<User> guards = userRepository.findAll().stream()
                 .filter(u -> "security guard".equalsIgnoreCase(u.getRole()))
                 .toList();
@@ -57,9 +59,20 @@ public class SyncRequestController {
             map.put("email",     g.getEmail());
             map.put("role",      g.getRole());
             map.put("status",    g.getStatus());
+
             Map<String, Object> req = pendingRequests.get(g.getId());
-            map.put("syncStatus", req != null ? req.get("status") : "NONE");
-            map.put("liveSync",  activeSyncs.contains(g.getId()));
+            // Only show sync status to the admin who initiated it
+            if (req != null) {
+                Object reqAdminId = req.get("requestedBy");
+                boolean isMine = adminId != null && adminId.toString().equals(String.valueOf(reqAdminId));
+                map.put("syncStatus", isMine ? req.get("status") : "NONE");
+            } else {
+                map.put("syncStatus", "NONE");
+            }
+
+            Long activatedBy = activeSyncs.get(g.getId());
+            boolean isMyLiveSync = adminId != null && adminId.equals(activatedBy);
+            map.put("liveSync", isMyLiveSync);
             return map;
         }).toList();
 
@@ -72,8 +85,17 @@ public class SyncRequestController {
         UserDTO user = (UserDTO) session.getAttribute("user");
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
+        Long adminId = resolveId(user);
+
         Map<String, Object> req = pendingRequests.get(guardId);
         if (req == null) return ResponseEntity.ok(Map.of("status", "NONE"));
+
+        // Only return actual status to the admin who made the request
+        Object reqAdminId = req.get("requestedBy");
+        if (adminId == null || !adminId.toString().equals(String.valueOf(reqAdminId))) {
+            return ResponseEntity.ok(Map.of("status", "NONE"));
+        }
+
         return ResponseEntity.ok(Map.of("status", req.get("status")));
     }
 
@@ -85,6 +107,8 @@ public class SyncRequestController {
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
 
+        Long adminId = resolveId(user);
+
         Optional<User> guardOpt = userRepository.findById(guardId);
         if (guardOpt.isEmpty()) return ResponseEntity.status(404).body("Guard not found");
         if (!"security guard".equalsIgnoreCase(guardOpt.get().getRole()))
@@ -92,14 +116,13 @@ public class SyncRequestController {
 
         Map<String, Object> req = new HashMap<>();
         req.put("status",          "PENDING");
-        req.put("requestedBy",     user.getEmail());
+        req.put("requestedBy",     adminId);
+        req.put("requestedByEmail",user.getEmail());
         req.put("requestedByName", user.getFirstName() + " " + user.getLastName());
         req.put("timestamp",       System.currentTimeMillis());
         pendingRequests.put(guardId, req);
 
-        System.out.println("[REQUEST] Stored pending for guardId=" + guardId
-            + " | map keys now=" + pendingRequests.keySet());
-
+        System.out.println("[REQUEST] Admin=" + adminId + " requested sync with guardId=" + guardId);
         return ResponseEntity.ok(Map.of("message", "Sync request sent", "guardId", guardId));
     }
 
@@ -110,9 +133,6 @@ public class SyncRequestController {
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
         Long guardId = resolveId(user);
-
-        System.out.println("[MY-REQUEST] guardId=" + guardId
-            + " | pendingRequests keys=" + pendingRequests.keySet());
 
         Map<String, Object> req = pendingRequests.get(guardId);
         if (req == null) return ResponseEntity.ok(Map.of("status", "NONE"));
@@ -131,10 +151,6 @@ public class SyncRequestController {
 
         Long guardId = resolveId(user);
 
-        System.out.println("[RESPOND] guardId=" + guardId
-            + " | decision=" + decision
-            + " | pendingRequests keys=" + pendingRequests.keySet());
-
         Map<String, Object> req = pendingRequests.get(guardId);
         if (req == null) {
             System.out.println("[RESPOND] ERROR — no pending request found for guardId=" + guardId);
@@ -144,9 +160,7 @@ public class SyncRequestController {
         req.put("status", decision.toUpperCase());
         pendingRequests.put(guardId, req);
 
-        System.out.println("[RESPOND] Updated status to " + decision.toUpperCase()
-            + " for guardId=" + guardId);
-
+        System.out.println("[RESPOND] guardId=" + guardId + " updated to " + decision.toUpperCase());
         return ResponseEntity.ok(Map.of("message", "Response recorded", "status", decision));
     }
 
@@ -158,8 +172,17 @@ public class SyncRequestController {
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
 
+        Long adminId = resolveId(user);
+
         Map<String, Object> req = pendingRequests.get(guardId);
-        if (req == null || !"ACCEPTED".equals(req.get("status")))
+        if (req == null) return ResponseEntity.status(403).body("No pending request for this guard");
+
+        // Only the admin who requested can collect
+        Object reqAdminId = req.get("requestedBy");
+        if (adminId == null || !adminId.toString().equals(String.valueOf(reqAdminId)))
+            return ResponseEntity.status(403).body("You did not initiate this sync request");
+
+        if (!"ACCEPTED".equals(req.get("status")))
             return ResponseEntity.status(403).body("Guard has not accepted the sync request");
 
         Optional<User> guardOpt = userRepository.findById(guardId);
@@ -177,8 +200,13 @@ public class SyncRequestController {
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
 
-        if (!activeSyncs.contains(guardId))
-            return ResponseEntity.status(404).body("No active sync for this guard");
+        Long adminId = resolveId(user);
+        Long activatedBy = activeSyncs.get(guardId);
+
+        // Only the admin who activated the sync can poll live logs
+        if (activatedBy == null) return ResponseEntity.status(404).body("No active sync for this guard");
+        if (!activatedBy.equals(adminId))
+            return ResponseEntity.status(403).body("This sync was not initiated by you");
 
         Optional<User> guardOpt = userRepository.findById(guardId);
         if (guardOpt.isEmpty()) return ResponseEntity.status(404).body("Guard not found");
@@ -195,11 +223,11 @@ public class SyncRequestController {
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
 
-        activeSyncs.add(guardId);
+        Long adminId = resolveId(user);
+        activeSyncs.put(guardId, adminId);
         pendingRequests.remove(guardId);
 
-        System.out.println("[ACTIVATE] Live sync started for guardId=" + guardId);
-
+        System.out.println("[ACTIVATE] Admin=" + adminId + " live sync started for guardId=" + guardId);
         return ResponseEntity.ok(Map.of("message", "Sync activated", "guardId", guardId));
     }
 
@@ -211,11 +239,18 @@ public class SyncRequestController {
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
 
+        Long adminId = resolveId(user);
+
+        // Only the admin who activated can cancel
+        Long activatedBy = activeSyncs.get(guardId);
+        if (activatedBy != null && !activatedBy.equals(adminId)) {
+            return ResponseEntity.status(403).body("You did not initiate this sync");
+        }
+
         activeSyncs.remove(guardId);
         pendingRequests.remove(guardId);
 
-        System.out.println("[CANCEL] Sync cancelled for guardId=" + guardId);
-
+        System.out.println("[CANCEL] Admin=" + adminId + " cancelled sync for guardId=" + guardId);
         return ResponseEntity.ok(Map.of(
             "message", "Sync cancelled – live feed stopped. Existing snapshot retained.",
             "guardId", guardId

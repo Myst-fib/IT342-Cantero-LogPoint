@@ -8,18 +8,33 @@ import HourglassEmptyIcon     from '@mui/icons-material/HourglassEmpty';
 import CloseIcon              from '@mui/icons-material/Close';
 import PersonOutlineIcon      from '@mui/icons-material/PersonOutline';
 import BlockIcon              from '@mui/icons-material/Block';
+import HistoryIcon            from '@mui/icons-material/History';
 
 const API = 'http://localhost:8080';
 
-// ── localStorage keys ─────────────────────────────────────────────────────────
-const LS_GUARD_ID   = 'logpoint_synced_guard_id';
-const LS_GUARD_INFO = 'logpoint_synced_guard_info';
-const LS_LOGS       = 'logpoint_synced_logs';
-const LS_STATUS     = 'logpoint_sync_status';
+// ── Get logged-in admin ID for user-scoped localStorage ───────────────────────
+const getCurrentUserId = () => {
+  try {
+    const u = localStorage.getItem('user');
+    if (!u) return 'guest';
+    return JSON.parse(u)?.id ?? 'guest';
+  } catch { return 'guest'; }
+};
+
+// ── localStorage key factory (user-scoped) ────────────────────────────────────
+const makeKeys = (uid) => ({
+  GUARD_ID:   `lp_sync_guard_id_${uid}`,
+  GUARD_INFO: `lp_sync_guard_info_${uid}`,
+  LOGS:       `lp_sync_logs_${uid}`,
+  STATUS:     `lp_sync_status_${uid}`,
+  HISTORY:    `lp_sync_history_${uid}`,
+});
 
 export const clearSyncStorage = () => {
-  [LS_GUARD_ID, LS_GUARD_INFO, LS_LOGS, LS_STATUS].forEach(k => {
-    try { localStorage.removeItem(k); } catch { /* */ }
+  const uid  = getCurrentUserId();
+  const keys = makeKeys(uid);
+  [keys.GUARD_ID, keys.GUARD_INFO, keys.LOGS, keys.STATUS].forEach(k => {
+    try { localStorage.removeItem(k); } catch { /**/ }
   });
 };
 
@@ -28,7 +43,7 @@ const lsGet = (key, fallback = null) => {
   catch { return fallback; }
 };
 const lsSet = (key, val) => {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* */ }
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch { /**/ }
 };
 
 // ── Confirm dialog ─────────────────────────────────────────────────────────────
@@ -37,26 +52,62 @@ const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
     <div className="sgm-confirm-box">
       <p className="sgm-confirm-msg">{message}</p>
       <div className="sgm-confirm-actions">
-        <button className="sgm-confirm-btn cancel" onClick={onCancel}>No, keep it</button>
+        <button className="sgm-confirm-btn cancel"  onClick={onCancel}>No, keep it</button>
         <button className="sgm-confirm-btn confirm" onClick={onConfirm}>Yes, cancel sync</button>
       </div>
     </div>
   </div>
 );
 
+// ── Sync History Panel ─────────────────────────────────────────────────────────
+const SyncHistoryPanel = ({ history, onClose }) => (
+  <div className="sgm-history-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="sgm-history-box">
+      <div className="sgm-history-header">
+        <HistoryIcon style={{ fontSize: 18 }} />
+        <span>Sync History</span>
+        <button className="sgm-close" onClick={onClose} style={{ marginLeft: 'auto' }}><CloseIcon /></button>
+      </div>
+      {history.length === 0 ? (
+        <p className="sgm-history-empty">No cancelled syncs yet.</p>
+      ) : (
+        <div className="sgm-history-list">
+          {[...history].reverse().map((h, i) => (
+            <div key={i} className="sgm-history-row">
+              <div className="sgm-history-avatar">{h.guardName?.charAt(0) || 'G'}</div>
+              <div className="sgm-history-meta">
+                <span className="sgm-history-name">{h.guardName}</span>
+                <span className="sgm-history-detail">
+                  {h.recordCount} record{h.recordCount !== 1 ? 's' : ''} &nbsp;·&nbsp;
+                  Cancelled {new Date(h.cancelledAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 const SyncGuardModal = ({ onClose, onSyncComplete }) => {
+  const uid  = getCurrentUserId();
+  const KEYS = makeKeys(uid);
+
   const [guards,         setGuards]         = useState([]);
   const [search,         setSearch]         = useState('');
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState('');
   const [confirmFor,     setConfirmFor]     = useState(null);
+  const [showHistory,    setShowHistory]    = useState(false);
 
-  // ── Persistent single-guard state (restored from localStorage) ────────────
-  const [syncedGuardId,   setSyncedGuardId]   = useState(() => lsGet(LS_GUARD_ID));
-  const [syncedGuardInfo, setSyncedGuardInfo] = useState(() => lsGet(LS_GUARD_INFO));
-  const [syncStatus,      setSyncStatus]      = useState(() => lsGet(LS_STATUS));
-  // Transient status only for current mount (PENDING / COLLECTING flow)
+  // Persistent single-guard state (user-scoped localStorage)
+  const [syncedGuardId,   setSyncedGuardId]   = useState(() => lsGet(KEYS.GUARD_ID));
+  const [syncedGuardInfo, setSyncedGuardInfo] = useState(() => lsGet(KEYS.GUARD_INFO));
+  const [syncStatus,      setSyncStatus]      = useState(() => lsGet(KEYS.STATUS));
+  const [syncHistory,     setSyncHistory]     = useState(() => lsGet(KEYS.HISTORY, []));
+  // Transient status only for current mount
   const [transientStatus, setTransientStatus] = useState(null);
 
   const guardsRef   = useRef([]);
@@ -66,11 +117,19 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
 
   // ── Persist helpers ───────────────────────────────────────────────────────
   const saveSync = (id, info, status, logs) => {
-    if (id     !== undefined) lsSet(LS_GUARD_ID,   id);
-    if (info   !== undefined) lsSet(LS_GUARD_INFO,  info);
-    if (status !== undefined) lsSet(LS_STATUS,      status);
-    if (logs   !== undefined) lsSet(LS_LOGS,        logs);
+    if (id     !== undefined) lsSet(KEYS.GUARD_ID,   id);
+    if (info   !== undefined) lsSet(KEYS.GUARD_INFO, info);
+    if (status !== undefined) lsSet(KEYS.STATUS,     status);
+    if (logs   !== undefined) lsSet(KEYS.LOGS,       logs);
   };
+
+  const addHistory = useCallback((entry) => {
+    setSyncHistory(prev => {
+      const next = [...prev, entry];
+      lsSet(KEYS.HISTORY, next);
+      return next;
+    });
+  }, [KEYS.HISTORY]);
 
   const wipeSync = useCallback(() => {
     clearSyncStorage();
@@ -99,11 +158,9 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
 
   useEffect(() => { fetchGuards(); }, [fetchGuards]);
 
-  // If modal opens while status is SYNCED, restart the live poll.
+  // Restart live poll if modal opens while already synced
   useEffect(() => {
-    if (syncStatus === 'SYNCED' && syncedGuardId) {
-      startLivePoll(syncedGuardId);
-    }
+    if (syncStatus === 'SYNCED' && syncedGuardId) startLivePoll(syncedGuardId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -112,7 +169,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     if (liveRef.current) clearInterval(liveRef.current);
   }, []);
 
-  // ── Poll for guard acceptance ─────────────────────────────────────────────
+  // ── Poll for guard acceptance (every 3 s) ────────────────────────────────
   const startPolling = (guardId) => {
     if (pollRef.current) clearInterval(pollRef.current);
     activeGuard.current = guardId;
@@ -124,7 +181,6 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
         const res  = await fetch(`${API}/api/sync/status/${gId}`, { credentials: 'include' });
         if (!res.ok) return;
         const data = await res.json();
-        console.log('[POLL STATUS]', data);
 
         if (data.status === 'ACCEPTED') {
           clearInterval(pollRef.current);
@@ -138,8 +194,8 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
           setTransientStatus(null);
           wipeSync();
         }
-      } catch { /* silent */ }
-    }, 2500);
+      } catch { /**/ }
+    }, 3000);
   };
 
   // ── Collect logs after acceptance ─────────────────────────────────────────
@@ -151,7 +207,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
       if (!res.ok) { setTransientStatus(null); return; }
 
       const logs  = JSON.parse(text);
-      const guard = guardsRef.current.find(g => g.id === guardId) || lsGet(LS_GUARD_INFO);
+      const guard = guardsRef.current.find(g => g.id === guardId) || lsGet(KEYS.GUARD_INFO);
 
       await fetch(`${API}/api/sync/activate/${guardId}`, {
         method: 'POST', credentials: 'include',
@@ -170,14 +226,14 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     }
   };
 
-  // ── Live poll every 10 s ──────────────────────────────────────────────────
+  // ── Live poll every 30 s (reduced to spare API calls) ────────────────────
   const startLivePoll = (guardId) => {
     if (liveRef.current) clearInterval(liveRef.current);
 
     liveRef.current = setInterval(async () => {
       try {
         const res = await fetch(`${API}/api/sync/live/${guardId}`, { credentials: 'include' });
-        if (res.status === 404) {
+        if (res.status === 403 || res.status === 404) {
           clearInterval(liveRef.current);
           liveRef.current = null;
           return;
@@ -185,11 +241,11 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
         if (!res.ok) return;
 
         const freshLogs = await res.json();
-        lsSet(LS_LOGS, freshLogs);
-        const guard = lsGet(LS_GUARD_INFO);
+        lsSet(KEYS.LOGS, freshLogs);
+        const guard = lsGet(KEYS.GUARD_INFO);
         if (onSyncComplete) onSyncComplete(freshLogs, guard, guardId, false);
-      } catch { /* silent */ }
-    }, 10000);
+      } catch { /**/ }
+    }, 30000);
   };
 
   // ── Send sync request ─────────────────────────────────────────────────────
@@ -232,13 +288,22 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     activeGuard.current = null;
 
     try {
-      await fetch(`${API}/api/sync/cancel/${guardId}`, {
-        method: 'POST', credentials: 'include',
-      });
-    } catch { /* silent */ }
+      await fetch(`${API}/api/sync/cancel/${guardId}`, { method: 'POST', credentials: 'include' });
+    } catch { /**/ }
 
-    const frozenLogs  = lsGet(LS_LOGS, []);
-    const frozenGuard = lsGet(LS_GUARD_INFO);
+    const frozenLogs  = lsGet(KEYS.LOGS, []);
+    const frozenGuard = lsGet(KEYS.GUARD_INFO);
+
+    // Save to history
+    const guardName = frozenGuard
+      ? `${frozenGuard.firstName} ${frozenGuard.lastName}`
+      : 'Unknown Guard';
+    addHistory({
+      guardId,
+      guardName,
+      recordCount: frozenLogs.length,
+      cancelledAt: new Date().toISOString(),
+    });
 
     setSyncStatus('CANCELLED');
     setTransientStatus(null);
@@ -253,11 +318,11 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
   const handleResync = () => {
     const guardId = syncedGuardId;
     setSyncStatus(null);
-    lsSet(LS_STATUS, null);
+    lsSet(KEYS.STATUS, null);
     handleSyncRequest(guardId);
   };
 
-  // ── Clear all ─────────────────────────────────────────────────────────────
+  // ── Clear all (wipe data + cancel on server) ──────────────────────────────
   const handleClearAll = () => {
     if (liveRef.current) { clearInterval(liveRef.current); liveRef.current = null; }
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
@@ -279,7 +344,6 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     g.id !== syncedGuardId &&
     (transientStatus === 'PENDING' || transientStatus === 'COLLECTING' || syncStatus === 'SYNCED');
 
-  // ── Status chip ───────────────────────────────────────────────────────────
   const getStatusChip = (guard) => {
     if (isPending(guard))
       return <span className="sync-chip pending"><HourglassEmptyIcon className="chip-icon" /> Waiting…</span>;
@@ -292,7 +356,6 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     return null;
   };
 
-  // ── Action button ─────────────────────────────────────────────────────────
   const getSyncButton = (guard) => {
     if (isPending(guard))
       return <button className="sync-btn waiting" disabled><HourglassEmptyIcon className="btn-icon-sm" /> Waiting…</button>;
@@ -339,15 +402,13 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     );
   };
 
-  const filtered = guards.filter(g =>
+  const filtered  = guards.filter(g =>
     `${g.firstName} ${g.lastName} ${g.email}`.toLowerCase().includes(search.toLowerCase())
   );
-
   const guardName = syncedGuardInfo
     ? `${syncedGuardInfo.firstName} ${syncedGuardInfo.lastName}`
     : null;
 
-  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="sgm-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       {confirmFor !== null && (
@@ -356,6 +417,10 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
           onConfirm={handleCancelConfirmed}
           onCancel={handleCancelDismissed}
         />
+      )}
+
+      {showHistory && (
+        <SyncHistoryPanel history={syncHistory} onClose={() => setShowHistory(false)} />
       )}
 
       <div className="sgm-modal">
@@ -367,12 +432,20 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
               <div className="sgm-title">Sync Guard Logs</div>
               <div className="sgm-subtitle">
                 {syncStatus === 'SYNCED' && guardName
-                  ? `Live syncing with ${guardName} · auto-updates every 10 s`
+                  ? `Live syncing with ${guardName} · auto-updates every 30 s`
                   : 'Select a security guard to sync their visitor log data'}
               </div>
             </div>
           </div>
           <div className="sgm-header-right">
+            <button
+              className="sgm-history-btn"
+              onClick={() => setShowHistory(true)}
+              title="View sync history"
+            >
+              <HistoryIcon style={{ fontSize: 16 }} />
+              {syncHistory.length > 0 && <span className="sgm-history-badge">{syncHistory.length}</span>}
+            </button>
             {(syncStatus === 'SYNCED' || syncStatus === 'CANCELLED') && (
               <button className="sgm-clear-btn" onClick={handleClearAll}>Clear</button>
             )}
