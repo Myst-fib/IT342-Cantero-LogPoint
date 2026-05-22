@@ -1497,3 +1497,8 @@
   }
   .vl-hero-refresh { width: 100%; justify-content: center; }
 }
+.vl-page-hero {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}

@@ -464,9 +464,6 @@ const Dashboard = () => {
                 ? <><ShieldOutlinedIcon style={{ fontSize: 15, marginRight: 4 }} />{guardName}</>
                 : 'Sync Guard Logs'}
             </button>
-            <Link className="btn-add" to="/add-visitor">
-              <span style={{ fontSize: 18, lineHeight: 1 }}>+</span> Add Visitor
-            </Link>
           </div>
         </div>
 
