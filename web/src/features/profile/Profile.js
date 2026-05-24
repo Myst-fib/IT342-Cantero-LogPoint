@@ -1,3 +1,4 @@
+import { apiFetch } from '../../shared/api';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Profile.css';
@@ -96,7 +97,7 @@ function EditAccountModal({ user, onClose, onSaved }) {
         email: form.email.trim(),
       };
 
-      const res = await fetch(`${API}/api/user/update`, {
+      const res = await apiFetch(`${API}/api/user/update`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -290,7 +291,7 @@ function SecurityModal({ user, onClose, onSaved }) {
         newPassword: form.newPassword,
       };
 
-      const res = await fetch(`${API}/api/user/update-password`, {
+      const res = await apiFetch(`${API}/api/user/update-password`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -512,7 +513,7 @@ function Profile() {
   // Fetch user
   const fetchUser = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/user/me`, {
+      const res = await apiFetch(`${API}/api/user/me`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -550,7 +551,7 @@ function Profile() {
   // Fetch visit logs for stats and recent activity
   const fetchVisitData = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/visit-logs`, {
+      const res = await apiFetch(`${API}/api/visit-logs`, {
         credentials: 'include',
       });
       if (!res.ok) return;
@@ -614,7 +615,7 @@ function Profile() {
       setUploadingPicture(true);
 
       try {
-        const res = await fetch(`${API}/api/user/update-picture`, {
+        const res = await apiFetch(`${API}/api/user/update-picture`, {
           method: 'PUT',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },

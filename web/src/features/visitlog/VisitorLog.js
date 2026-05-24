@@ -1,3 +1,4 @@
+import { apiFetch } from '../../shared/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import './VisitorLog.css';
 import EditVisitorModal from './EditVisitorModal';
@@ -19,7 +20,6 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 
-const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 function VisitorLog() {
   const [visitLogs, setVisitLogs] = useState([]);
   const [filteredLogs, setFilteredLogs] = useState([]);
@@ -57,7 +57,7 @@ function VisitorLog() {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`https://logpoint-backend.onrender.com/api/sync/live/${gId}`, {
+        const res = await apiFetch(`https://logpoint-backend.onrender.com/api/sync/live/${gId}`, {
           credentials: 'include',
         });
         if (!res.ok) return;
@@ -109,7 +109,7 @@ function VisitorLog() {
     else setLoading(true);
 
     try {
-      const response = await fetch('https://logpoint-backend.onrender.com/api/visit-logs', {
+      const response = await apiFetch('https://logpoint-backend.onrender.com/api/visit-logs', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -200,7 +200,7 @@ function VisitorLog() {
     setCheckingOut(logId);
 
     try {
-      const response = await fetch(`https://logpoint-backend.onrender.com/api/visit-logs/check-out/${logId}`, {
+      const response = await apiFetch(`https://logpoint-backend.onrender.com/api/visit-logs/check-out/${logId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -237,7 +237,7 @@ function VisitorLog() {
     setDeleteModal({ show: false, logId: null, visitorName: '' });
 
     try {
-      const response = await fetch(`https://logpoint-backend.onrender.com/api/visit-logs/${logId}`, {
+      const response = await apiFetch(`https://logpoint-backend.onrender.com/api/visit-logs/${logId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -395,7 +395,7 @@ function VisitorLog() {
               className="synced-guard-clear"
               onClick={() => {
                 if (syncedGuard?.guardId) {
-                  fetch(`https://logpoint-backend.onrender.com/api/sync/deactivate/${syncedGuard.guardId}`, {
+                  apiFetch(`https://logpoint-backend.onrender.com/api/sync/deactivate/${syncedGuard.guardId}`, {
                     method: 'POST', credentials: 'include',
                   }).catch(() => {});
                 }
@@ -656,6 +656,3 @@ function VisitorLog() {
 }
 
 export default VisitorLog;
-
-
-

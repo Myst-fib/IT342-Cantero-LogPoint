@@ -1,4 +1,5 @@
 // Dashboard.js
+import { apiFetch } from '../../shared/api';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import './Dashboard.css';
@@ -200,7 +201,7 @@ const Dashboard = () => {
   const fetchOwnLogs = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch(`${API}/api/visit-logs`, {
+      const res = await apiFetch(`${API}/api/visit-logs`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -227,7 +228,7 @@ const Dashboard = () => {
 
     if (!silent) setRefreshing(true);
     try {
-      const res = await fetch(`${API}/api/sync/live/${guardId}`, { credentials: 'include' });
+      const res = await apiFetch(`${API}/api/sync/live/${guardId}`, { credentials: 'include' });
       if (res.ok) {
         const freshLogs = await res.json();
 
@@ -777,6 +778,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-
-

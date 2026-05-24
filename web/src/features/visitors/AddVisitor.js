@@ -1,3 +1,4 @@
+import { apiFetch } from '../../shared/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AddVisitor.css';
@@ -9,7 +10,6 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 
-const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 function AddVisitor() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -126,7 +126,7 @@ function AddVisitor() {
     console.log('Submitting to /api/visitors:', submissionData);
 
     try {
-      const response = await fetch(`${API}/api/visitors`, {
+      const response = await apiFetch('https://logpoint-backend.onrender.com/api/visitors', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
@@ -357,6 +357,3 @@ function AddVisitor() {
 }
 
 export default AddVisitor;
-
-
-

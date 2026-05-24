@@ -28,13 +28,15 @@ public class UserController {
      * Returns the currently authenticated user from the session.
      */
     @GetMapping("/me")
-    public ResponseEntity<?> me(HttpSession session) {
+    public ResponseEntity<?> me(HttpSession session,
+                                @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
         UserDTO user = (UserDTO) session.getAttribute("user");
-
-        if (user == null) {
+        if (user == null && headerEmail != null && !headerEmail.isBlank()) {
+            Optional<edu.cit.cantero.logpoint.shared.User> userOpt = userRepository.findByEmail(headerEmail);
+            if (userOpt.isPresent()) return ResponseEntity.ok(new UserDTO(userOpt.get()));
             return ResponseEntity.status(401).body("Not authenticated");
         }
-
+        if (user == null) return ResponseEntity.status(401).body("Not authenticated");
         return ResponseEntity.ok(user);
     }
 
@@ -46,9 +48,10 @@ public class UserController {
     @PutMapping("/update")
     public ResponseEntity<?> updateProfile(
             @RequestBody Map<String, String> body,
-            HttpSession session) {
+            HttpSession session,
+            @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
 
-        UserDTO sessionUser = (UserDTO) session.getAttribute("user");
+        UserDTO sessionUser = resolveSessionUser(session, headerEmail);
         if (sessionUser == null) {
             return ResponseEntity.status(401).body("Not authenticated");
         }
@@ -95,9 +98,10 @@ public class UserController {
     @PutMapping("/update-password")
     public ResponseEntity<?> updatePassword(
             @RequestBody Map<String, String> body,
-            HttpSession session) {
+            HttpSession session,
+            @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
 
-        UserDTO sessionUser = (UserDTO) session.getAttribute("user");
+        UserDTO sessionUser = resolveSessionUser(session, headerEmail);
         if (sessionUser == null) {
             return ResponseEntity.status(401).body("Not authenticated");
         }
@@ -155,9 +159,10 @@ public class UserController {
     @PutMapping("/update-picture")
     public ResponseEntity<?> updatePicture(
             @RequestBody Map<String, String> body,
-            HttpSession session) {
+            HttpSession session,
+            @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
 
-        UserDTO sessionUser = (UserDTO) session.getAttribute("user");
+        UserDTO sessionUser = resolveSessionUser(session, headerEmail);
         if (sessionUser == null) {
             return ResponseEntity.status(401).body("Not authenticated");
         }
@@ -191,5 +196,15 @@ public class UserController {
         session.setAttribute("user", updatedDTO);
 
         return ResponseEntity.ok(updatedDTO);
+    }
+
+    private UserDTO resolveSessionUser(HttpSession session, String headerEmail) {
+        UserDTO sessionUser = (UserDTO) session.getAttribute("user");
+        if (sessionUser != null) return sessionUser;
+        if (headerEmail != null && !headerEmail.isBlank()) {
+            Optional<edu.cit.cantero.logpoint.shared.User> userOpt = userRepository.findByEmail(headerEmail);
+            if (userOpt.isPresent()) return new UserDTO(userOpt.get());
+        }
+        return null;
     }
 }

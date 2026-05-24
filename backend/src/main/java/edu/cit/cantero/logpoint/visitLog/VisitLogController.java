@@ -13,15 +13,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/visit-logs")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class VisitLogController {
 
     @Autowired
     private VisitLogService visitLogService;
 
     @PostMapping("/check-in")
-    public ResponseEntity<VisitLogDTO> checkIn(@RequestBody VisitLogDTO visitLogDTO, HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+    public ResponseEntity<VisitLogDTO> checkIn(@RequestBody VisitLogDTO visitLogDTO, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -30,8 +29,8 @@ public class VisitLogController {
     }
 
     @PostMapping("/check-out/{id}")
-    public ResponseEntity<VisitLogDTO> checkOut(@PathVariable Long id, HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+    public ResponseEntity<VisitLogDTO> checkOut(@PathVariable Long id, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -40,8 +39,8 @@ public class VisitLogController {
     }
 
     @GetMapping
-    public ResponseEntity<List<VisitLogDTO>> getVisitLogs(HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+    public ResponseEntity<List<VisitLogDTO>> getVisitLogs(HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -50,8 +49,8 @@ public class VisitLogController {
     }
     
     @GetMapping("/all")
-    public ResponseEntity<List<VisitLogDTO>> getAllVisitLogs(HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+    public ResponseEntity<List<VisitLogDTO>> getAllVisitLogs(HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -61,8 +60,8 @@ public class VisitLogController {
     }
     
     @GetMapping("/active")
-    public ResponseEntity<List<VisitLogDTO>> getActiveVisits(HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+    public ResponseEntity<List<VisitLogDTO>> getActiveVisits(HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -71,8 +70,8 @@ public class VisitLogController {
     }
 
     @GetMapping("/visitor/{visitorId}")
-    public ResponseEntity<List<VisitLogDTO>> getVisitLogsByVisitor(@PathVariable Long visitorId, HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+    public ResponseEntity<List<VisitLogDTO>> getVisitLogsByVisitor(@PathVariable Long visitorId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -83,8 +82,8 @@ public class VisitLogController {
     @PutMapping("/{id}")
     public ResponseEntity<VisitLogDTO> updateVisitLog(@PathVariable Long id, 
                                                     @Valid @RequestBody UpdateVisitLogRequest updateRequest, 
-                                                    HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+                                                    HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -94,8 +93,8 @@ public class VisitLogController {
 
     // NEW: Delete visit log
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVisitLog(@PathVariable Long id, HttpSession session) {
-        String userEmail = extractEmailFromSession(session);
+    public ResponseEntity<Void> deleteVisitLog(@PathVariable Long id, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail) {
+        String userEmail = resolveEmail(session, headerEmail);
         if (userEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -103,11 +102,10 @@ public class VisitLogController {
         return ResponseEntity.noContent().build();
     }
 
-    private String extractEmailFromSession(HttpSession session) {
+    private String resolveEmail(HttpSession session, String headerEmail) {
         Object userObj = session.getAttribute("user");
-        if (userObj instanceof UserDTO userDTO) {
-            return userDTO.getEmail();
-        }
+        if (userObj instanceof UserDTO userDTO) return userDTO.getEmail();
+        if (headerEmail != null && !headerEmail.isBlank()) return headerEmail;
         return null;
     }
 }

@@ -1,3 +1,4 @@
+import { apiFetch } from '../../shared/api';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './SyncGuardModal.css';
 import SearchIcon             from '@mui/icons-material/Search';
@@ -143,7 +144,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
   const fetchGuards = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`${API}/api/sync/guards`, { credentials: 'include' });
+      const res  = await apiFetch(`${API}/api/sync/guards`, { credentials: 'include' });
       const text = await res.text();
       if (!res.ok) { setError(`Load failed (${res.status}): ${text}`); return; }
       const data = JSON.parse(text);
@@ -178,7 +179,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
       const gId = activeGuard.current;
       if (!gId) return;
       try {
-        const res  = await fetch(`${API}/api/sync/status/${gId}`, { credentials: 'include' });
+        const res  = await apiFetch(`${API}/api/sync/status/${gId}`, { credentials: 'include' });
         if (!res.ok) return;
         const data = await res.json();
 
@@ -202,14 +203,14 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
   const doCollect = async (guardId) => {
     setTransientStatus('COLLECTING');
     try {
-      const res  = await fetch(`${API}/api/sync/logs/${guardId}`, { credentials: 'include' });
+      const res  = await apiFetch(`${API}/api/sync/logs/${guardId}`, { credentials: 'include' });
       const text = await res.text();
       if (!res.ok) { setTransientStatus(null); return; }
 
       const logs  = JSON.parse(text);
       const guard = guardsRef.current.find(g => g.id === guardId) || lsGet(KEYS.GUARD_INFO);
 
-      await fetch(`${API}/api/sync/activate/${guardId}`, {
+      await apiFetch(`${API}/api/sync/activate/${guardId}`, {
         method: 'POST', credentials: 'include',
       });
 
@@ -232,7 +233,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
 
     liveRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`${API}/api/sync/live/${guardId}`, { credentials: 'include' });
+        const res = await apiFetch(`${API}/api/sync/live/${guardId}`, { credentials: 'include' });
         if (res.status === 403 || res.status === 404) {
           clearInterval(liveRef.current);
           liveRef.current = null;
@@ -258,7 +259,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     saveSync(guardId, guard, null, undefined);
 
     try {
-      const res  = await fetch(`${API}/api/sync/request/${guardId}`, {
+      const res  = await apiFetch(`${API}/api/sync/request/${guardId}`, {
         method: 'POST', credentials: 'include',
       });
       const text = await res.text();
@@ -288,7 +289,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     activeGuard.current = null;
 
     try {
-      await fetch(`${API}/api/sync/cancel/${guardId}`, { method: 'POST', credentials: 'include' });
+      await apiFetch(`${API}/api/sync/cancel/${guardId}`, { method: 'POST', credentials: 'include' });
     } catch { /**/ }
 
     const frozenLogs  = lsGet(KEYS.LOGS, []);
@@ -328,7 +329,7 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
     activeGuard.current = null;
     if (syncedGuardId) {
-      fetch(`${API}/api/sync/cancel/${syncedGuardId}`, { method: 'POST', credentials: 'include' })
+      apiFetch(`${API}/api/sync/cancel/${syncedGuardId}`, { method: 'POST', credentials: 'include' })
         .catch(() => {});
       if (onSyncComplete) onSyncComplete(null, null, syncedGuardId, false, true);
     }
@@ -527,6 +528,3 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
 };
 
 export default SyncGuardModal;
-
-
-

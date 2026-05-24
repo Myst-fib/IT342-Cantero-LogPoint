@@ -1,3 +1,4 @@
+import { apiFetch } from './api';
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import './NavBar.css';
@@ -21,7 +22,7 @@ function NavBar() {
   // ── Always fetch user from backend on mount to ensure session is alive ──
   const fetchUserData = useCallback(async () => {
     try {
-      const response = await fetch(`${API}/api/user/me`, {
+      const response = await apiFetch(`${API}/api/user/me`, {
         credentials: 'include',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       });
@@ -66,7 +67,7 @@ function NavBar() {
   // ── Poll for sync requests — security guard only ──────────────────────────
   const pollSyncRequest = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/sync/my-request`, {
+      const res = await apiFetch(`${API}/api/sync/my-request`, {
         credentials: 'include',
       });
 
@@ -114,7 +115,7 @@ function NavBar() {
     setRespondingSync(true);
     setRespondError('');
     try {
-      const res = await fetch(`${API}/api/sync/respond`, {
+      const res = await apiFetch(`${API}/api/sync/respond`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -165,7 +166,7 @@ function NavBar() {
 
   const confirmLogout = async () => {
     try {
-      await fetch(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+      await apiFetch(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     } catch { /* ignore */ } finally {
       localStorage.removeItem('user');
       localStorage.removeItem('isLoggedIn');

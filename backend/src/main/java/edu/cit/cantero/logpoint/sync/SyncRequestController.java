@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RestController
 @RequestMapping("/api/sync")
 // Allow both web (localhost:3000) and mobile (no origin / Android emulator)
-@CrossOrigin(origins = {"http://localhost:3000", "http://10.0.2.2:8080", "http://10.0.2.2"}, allowCredentials = "true")
 public class SyncRequestController {
 
     @Autowired
@@ -36,9 +35,31 @@ public class SyncRequestController {
         return Long.valueOf(String.valueOf(raw));
     }
 
+    private UserDTO resolveUser(HttpSession session, String headerEmail, String headerRole) {
+        UserDTO sessionUser = resolveUser(session, headerEmail, headerRole);
+        if (sessionUser != null) return sessionUser;
+        if (headerEmail != null && !headerEmail.isBlank()) {
+            // Reconstruct a minimal UserDTO from headers for cross-domain requests
+            return edu.cit.cantero.logpoint.shared.UserRepository.class.cast(null) == null
+                ? buildUserFromHeader(headerEmail, headerRole)
+                : null;
+        }
+        return null;
+    }
+
+    private UserDTO buildUserFromHeader(String email, String role) {
+        try {
+            Optional<edu.cit.cantero.logpoint.shared.User> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                return new UserDTO(userOpt.get());
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
     @GetMapping("/guards")
-    public ResponseEntity<?> getGuards(HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> getGuards(HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
         Long adminId = resolveId(user);
@@ -75,8 +96,8 @@ public class SyncRequestController {
     }
 
     @GetMapping("/status/{guardId}")
-    public ResponseEntity<?> getSyncStatus(@PathVariable Long guardId, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> getSyncStatus(@PathVariable Long guardId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
         Long adminId = resolveId(user);
@@ -93,8 +114,8 @@ public class SyncRequestController {
     }
 
     @PostMapping("/request/{guardId}")
-    public ResponseEntity<?> requestSync(@PathVariable Long guardId, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> requestSync(@PathVariable Long guardId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
@@ -119,8 +140,8 @@ public class SyncRequestController {
     }
 
     @GetMapping("/my-request")
-    public ResponseEntity<?> getMyRequest(HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> getMyRequest(HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
         Long guardId = resolveId(user);
@@ -130,8 +151,8 @@ public class SyncRequestController {
     }
 
     @PostMapping("/respond")
-    public ResponseEntity<?> respond(@RequestBody Map<String, String> body, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> respond(@RequestBody Map<String, String> body, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
 
         String decision = body.get("decision");
@@ -153,8 +174,8 @@ public class SyncRequestController {
     }
 
     @GetMapping("/logs/{guardId}")
-    public ResponseEntity<?> getGuardLogs(@PathVariable Long guardId, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> getGuardLogs(@PathVariable Long guardId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
@@ -178,8 +199,8 @@ public class SyncRequestController {
     }
 
     @GetMapping("/live/{guardId}")
-    public ResponseEntity<?> getLiveLogs(@PathVariable Long guardId, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> getLiveLogs(@PathVariable Long guardId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
@@ -199,8 +220,8 @@ public class SyncRequestController {
     }
 
     @PostMapping("/activate/{guardId}")
-    public ResponseEntity<?> activateSync(@PathVariable Long guardId, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> activateSync(@PathVariable Long guardId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
@@ -214,8 +235,8 @@ public class SyncRequestController {
     }
 
     @PostMapping("/cancel/{guardId}")
-    public ResponseEntity<?> cancelSync(@PathVariable Long guardId, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> cancelSync(@PathVariable Long guardId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
@@ -236,8 +257,8 @@ public class SyncRequestController {
     }
 
     @PostMapping("/clear/{guardId}")
-    public ResponseEntity<?> clearRequest(@PathVariable Long guardId, HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("user");
+    public ResponseEntity<?> clearRequest(@PathVariable Long guardId, HttpSession session, @RequestHeader(value = "X-User-Email", required = false) String headerEmail, @RequestHeader(value = "X-User-Role", required = false) String headerRole) {
+        UserDTO user = resolveUser(session, headerEmail, headerRole);
         if (user == null) return ResponseEntity.status(401).body("Not authenticated");
         if (!"office administrator".equalsIgnoreCase(user.getRole()))
             return ResponseEntity.status(403).body("Forbidden");
