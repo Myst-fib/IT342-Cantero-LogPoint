@@ -516,12 +516,31 @@ function Profile() {
         method: 'GET',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Not authenticated');
-      const data = await res.json();
-      setUser(data);
-      return data;
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+        localStorage.setItem('user', JSON.stringify(data));
+        return data;
+      }
+      // Session cookie blocked cross-domain (Render) — fall back to localStorage
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setUser(parsed);
+        return parsed;
+      }
+      return null;
     } catch (err) {
+      // Network error — still try localStorage
       console.error(err);
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setUser(parsed);
+          return parsed;
+        } catch { /* ignore */ }
+      }
       return null;
     } finally {
       setLoading(false);
@@ -941,6 +960,3 @@ function Profile() {
 }
 
 export default Profile;
-
-
-

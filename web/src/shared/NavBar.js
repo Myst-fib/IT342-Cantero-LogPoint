@@ -70,11 +70,9 @@ function NavBar() {
         credentials: 'include',
       });
 
-      // Session expired mid-session — only redirect if localStorage is also gone
-      if (res.status === 401) {
-        if (!localStorage.getItem('user')) fetchUserData();
-        return;
-      }
+      // 401 on Render = cross-domain cookie issue; session data is in localStorage.
+      // Just skip silently — do NOT call fetchUserData() here (causes infinite loop).
+      if (res.status === 401) return;
 
       if (!res.ok) return;
       const data = await res.json();
@@ -101,7 +99,7 @@ function NavBar() {
     } catch {
       // silent — network error, will retry on next interval
     }
-  }, [fetchUserData]);
+  }, []);
 
   useEffect(() => {
     const isGuard = user?.role?.toLowerCase() === 'security guard';
@@ -125,7 +123,6 @@ function NavBar() {
 
       if (res.status === 401) {
         setRespondError('Session expired. Please log in again.');
-        fetchUserData(); // will redirect to login
         return;
       }
 
