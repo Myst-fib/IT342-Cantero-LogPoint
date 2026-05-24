@@ -116,14 +116,20 @@ function AddVisitor() {
     }
 
     // Prepare data for backend - Matches VisitorDTO exactly
-    // Build a full ISO datetime from the user-selected timeIn (HH:mm) + today's date in PH time
+    // Build a local datetime string (no UTC conversion) from user-selected HH:mm + today's PH date.
+    // toISOString() would shift to UTC (PHT is UTC+8) causing an 8-hour error in the stored time.
+    // Instead we format as "YYYY-MM-DDTHH:mm:ss" which Java's LocalDateTime parses as local time.
     const buildTimeInISO = () => {
       const now = new Date();
       const phDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
       const [hours, minutes] = (formData.timeIn || '').split(':').map(Number);
       if (isNaN(hours) || isNaN(minutes)) return null;
-      phDate.setHours(hours, minutes, 0, 0);
-      return phDate.toISOString();
+      const yyyy = phDate.getFullYear();
+      const mm   = String(phDate.getMonth() + 1).padStart(2, '0');
+      const dd   = String(phDate.getDate()).padStart(2, '0');
+      const hh   = String(hours).padStart(2, '0');
+      const min  = String(minutes).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}T${hh}:${min}:00`;
     };
 
     const submissionData = {
