@@ -19,6 +19,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 function VisitorLog() {
   const [visitLogs, setVisitLogs] = useState([]);
   const [filteredLogs, setFilteredLogs] = useState([]);

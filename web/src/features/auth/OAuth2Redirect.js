@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './OAuth2Redirect.css';
 
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 function OAuth2Redirect() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,7 +29,7 @@ function OAuth2Redirect() {
       localStorage.setItem('user', JSON.stringify(user));
 
       // Call backend to complete login
-      fetch('https://logpoint-backend.onrender.com/api/auth/oauth2/success', {
+      fetch(`${API}/api/auth/oauth2/success`, {
         method: 'GET',
         credentials: 'include',
         headers: {

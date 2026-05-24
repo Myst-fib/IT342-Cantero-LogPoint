@@ -9,7 +9,7 @@ import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 
 const PURPOSES = ['Meeting', 'Interview', 'Delivery', 'Vendor Visit', 'Maintenance', 'Other'];
-
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 function EditVisitorModal({ log, onClose, onSave }) {
   const [formData, setFormData] = useState({
     visitorName: '',
@@ -66,7 +66,7 @@ function EditVisitorModal({ log, onClose, onSave }) {
 
       console.log('Sending update payload:', payload); // Debug log
 
-      const response = await fetch(`https://logpoint-backend.onrender.com/api/visitors/${log.id}`, {
+      const response = await fetch(`${API}/api/visitors/${log.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

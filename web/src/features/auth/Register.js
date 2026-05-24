@@ -11,6 +11,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import WarningIcon from '@mui/icons-material/Warning';
 import CloseIcon from '@mui/icons-material/Close';
 
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -230,7 +231,7 @@ function Register() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://logpoint-backend.onrender.com/api/auth/register", {
+      const response = await fetch(`${API}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

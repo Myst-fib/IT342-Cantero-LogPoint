@@ -12,6 +12,8 @@ import WarningIcon from '@mui/icons-material/Warning';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
+
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -111,7 +113,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://logpoint-backend.onrender.com/api/auth/login", {
+      const response = await fetch(`${API}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -301,7 +303,7 @@ function Login() {
           
           <button 
             className="google-btn"
-            onClick={() => window.location.href = 'https://logpoint-backend.onrender.com/oauth2/authorization/google'}
+            onClick={() => window.location.href = `${API}/oauth2/authorization/google`}
             disabled={loading}
           >
             <img 

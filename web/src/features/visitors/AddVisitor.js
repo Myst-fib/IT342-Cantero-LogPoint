@@ -9,6 +9,7 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 function AddVisitor() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -125,7 +126,7 @@ function AddVisitor() {
     console.log('Submitting to /api/visitors:', submissionData);
 
     try {
-      const response = await fetch('https://logpoint-backend.onrender.com/api/visitors', {
+      const response = await fetch(`${API}/api/visitors`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
