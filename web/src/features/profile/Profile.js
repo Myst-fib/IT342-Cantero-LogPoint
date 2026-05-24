@@ -702,10 +702,11 @@ function Profile() {
 
       <div className="profile-container">
         {/* Page Header */}
-        <div className="page-header">
-          <div>
-            <div className="page-title">My Profile</div>
-            <div className="page-subtitle">Manage your account and personal information</div>
+        <div className="profile-page-hero">
+          <div className="profile-hero-title-block">
+            <div className="profile-hero-label">Account</div>
+            <div className="profile-hero-title">My Profile</div>
+            <div className="profile-hero-subtitle">Manage your account and personal information</div>
           </div>
         </div>
 
