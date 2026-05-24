@@ -500,3 +500,21 @@
     font-size: 13px;
   }
 }
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.eye-icon:hover {
+  color: var(--primary-dark);
+}
+
+.eye-icon svg {
+  width: 20px;
+  height: 20px;
+}

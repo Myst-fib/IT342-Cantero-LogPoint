@@ -10,8 +10,11 @@ import ErrorIcon from '@mui/icons-material/Error';
 import InfoIcon from '@mui/icons-material/Info';
 import WarningIcon from '@mui/icons-material/Warning';
 import CloseIcon from '@mui/icons-material/Close';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
+
 function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -32,6 +35,8 @@ function Register() {
     suggestions: []
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Helper function to translate backend errors to user-friendly messages
   const translateError = (errorData, status) => {
@@ -48,7 +53,7 @@ function Register() {
       suggestions = [
         "✅ Make sure you're using a unique email address that hasn't been registered before",
         "✅ Check that all fields are filled out correctly",
-        "✅ Ensure your password is at least 6 characters long"
+        "✅ Ensure your password is at least 8 characters long"
       ];
       
       if (typeof errorData === 'string') {
@@ -77,7 +82,7 @@ function Register() {
       userMessage = "Please check the information you provided.";
       suggestions = [
         "📧 Make sure your email format is correct (name@example.com)",
-        "🔒 Password must be at least 6 characters long",
+        "🔒 Password must be at least 8 characters long",
         "✅ Ensure passwords match"
       ];
     }
@@ -98,7 +103,7 @@ function Register() {
       userMessage = "Some information doesn't meet our requirements.";
       suggestions = [
         "📧 Check that your email is valid",
-        "🔒 Password must be at least 6 characters",
+        "🔒 Password must be at least 8 characters",
         "📝 Make sure all fields are filled correctly"
       ];
     }
@@ -186,9 +191,9 @@ function Register() {
       return false;
     }
 
-    if (formData.password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      showNotification('error', 'Password must be at least 6 characters long for security', 'password');
+    if (formData.password.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      showNotification('error', 'Password must be at least 8 characters long for security', 'password');
       return false;
     }
 
@@ -361,7 +366,7 @@ function Register() {
         <h2>Create Account</h2>
         <form onSubmit={handleSubmit}>
           
-          {/* Email field - now first */}
+          {/* Email field */}
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <div className={getFieldClassName('email')}>
@@ -377,10 +382,9 @@ function Register() {
                 className={notification.field === 'email' ? 'error-highlight' : ''}
               />
             </div>
-            {/* Removed the "We'll never share your email" text */}
           </div>
 
-          {/* Role field - now second */}
+          {/* Role field */}
           <div className="form-group">
             <label htmlFor="role">Role</label>
             <div className={`role-select-container ${getFieldClassName('role')}`}>
@@ -393,14 +397,14 @@ function Register() {
                 className={`role-select ${notification.field === 'role' ? 'error-highlight' : ''}`}
                 required
               >
-                <option value="" disabled>Select Role</option> {/* <-- placeholder */}
+                <option value="" disabled>Select Role</option>
                 <option value="Office Administrator">Office Administrator</option>
                 <option value="Security Guard">Security Guard</option>
               </select>
             </div>
           </div>
 
-          {/* First Name and Last Name - now after email and role */}
+          {/* First Name and Last Name */}
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="firstName">First Name</label>
@@ -437,12 +441,13 @@ function Register() {
             </div>
           </div>
 
+          {/* Password */}
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <div className={getFieldClassName('password')}>
               <LockIcon className="input-icon" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
                 value={formData.password}
@@ -451,16 +456,20 @@ function Register() {
                 required
                 className={notification.field === 'password' ? 'error-highlight' : ''}
               />
+              <span className="eye-icon" onClick={() => setShowPassword(v => !v)}>
+                {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              </span>
             </div>
-            <small className="password-hint">Minimum 6 characters</small>
+            <small className="password-hint">Minimum 8 characters</small>
           </div>
 
+          {/* Confirm Password */}
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <div className={getFieldClassName('confirmPassword')}>
               <LockIcon className="input-icon" />
               <input
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
@@ -469,6 +478,9 @@ function Register() {
                 required
                 className={notification.field === 'confirmPassword' ? 'error-highlight' : ''}
               />
+              <span className="eye-icon" onClick={() => setShowConfirmPassword(v => !v)}>
+                {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              </span>
             </div>
           </div>
 
@@ -498,6 +510,3 @@ function Register() {
 }
 
 export default Register;
-
-
-
