@@ -28,83 +28,57 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         logger.info("========== GOOGLE OAUTH2 LOGIN ATTEMPT ==========");
-        
+
         OAuth2User oauth2User = super.loadUser(userRequest);
-        
         Map<String, Object> attributes = oauth2User.getAttributes();
-        logger.info("OAuth2 attributes received: {}", attributes.keySet());
-        
-        String email = (String) attributes.get("email");
-        String givenName = (String) attributes.get("given_name");
+
+        String email      = (String) attributes.get("email");
+        String givenName  = (String) attributes.get("given_name");
         String familyName = (String) attributes.get("family_name");
-        String picture = (String) attributes.get("picture");
-        String sub = (String) attributes.get("sub"); // Google user ID
-        
-        logger.info("Email: {}", email);
-        logger.info("Given name: {}", givenName);
-        logger.info("Family name: {}", familyName);
-        logger.info("Google ID (sub): {}", sub);
-        
+        String picture    = (String) attributes.get("picture");
+        String sub        = (String) attributes.get("sub");
+
         if (email == null) {
-            logger.error("Email not found from Google");
             throw new OAuth2AuthenticationException("Email not found from Google");
         }
 
         try {
-            // Check if user exists in database
             Optional<User> existingUser = userRepository.findByEmail(email);
-            
-            User user;
+
             if (existingUser.isEmpty()) {
-                logger.info("User not found in database. Creating new user from Google data...");
-                
-                // Create new user from Google OAuth2 data
-                user = new User();
+                logger.info("New Google user — creating with PENDING role: {}", email);
+
+                User user = new User();
                 user.setEmail(email);
-                user.setFirstName(givenName != null ? givenName : "");
+                user.setFirstName(givenName  != null ? givenName  : "");
                 user.setLastName(familyName != null ? familyName : "");
                 user.setAuthProvider("GOOGLE");
                 user.setProviderId(sub);
                 user.setPictureUrl(picture);
-                user.setRole("USER");
+                user.setRole("PENDING");   // ← will be set on role-selection page
                 user.setStatus("ACTIVE");
-                user.setPassword(""); // OAuth users don't have password
-                
-                logger.info("Saving new Google user to database...");
-                User savedUser = userRepository.save(user);
-                logger.info("✅ New Google user saved with ID: {}", savedUser.getId());
-                
+                user.setPassword("");
+
+                userRepository.save(user);
+                logger.info("✅ New Google user saved (PENDING): {}", email);
+
             } else {
-                logger.info("User already exists in database. Updating information...");
-                user = existingUser.get();
-                
-                // Update user info
-                user.setFirstName(givenName != null ? givenName : user.getFirstName());
+                logger.info("Existing Google user — updating info: {}", email);
+                User user = existingUser.get();
+                user.setFirstName(givenName  != null ? givenName  : user.getFirstName());
                 user.setLastName(familyName != null ? familyName : user.getLastName());
                 user.setPictureUrl(picture);
                 user.setProviderId(sub);
                 user.setAuthProvider("GOOGLE");
                 user.setUpdatedAt(LocalDateTime.now());
-                
-                User updatedUser = userRepository.save(user);
-                logger.info("✅ User updated with ID: {}", updatedUser.getId());
+                userRepository.save(user);
             }
-            
-            // Verify the save was successful
-            Optional<User> verifyUser = userRepository.findByEmail(email);
-            if (verifyUser.isPresent()) {
-                logger.info("✅ Verification: User found in database after save/update");
-            } else {
-                logger.error("❌ Verification: User NOT found in database after save!");
-            }
-            
-            logger.info("========== GOOGLE OAUTH2 LOGIN COMPLETED ==========");
-            
+
         } catch (Exception e) {
             logger.error("Error during OAuth2 user processing: ", e);
             throw new OAuth2AuthenticationException("Failed to process OAuth2 user: " + e.getMessage());
         }
-        
+
         return oauth2User;
     }
 }

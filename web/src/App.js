@@ -9,6 +9,7 @@ import AddVisitor from './features/visitors/AddVisitor';
 import VisitorLog from './features/visitlog/VisitorLog';
 import ProtectedRoute from './shared/ProtectedRoute';
 import OAuth2Redirect from './features/auth/OAuth2Redirect';
+import RoleSelection from './features/auth/RoleSelection';
 
 function AppLayout() {
   const location = useLocation();
@@ -20,46 +21,20 @@ function AppLayout() {
     <>
       {showNavBar && <NavBar />}
       <Routes>
-        <Route path="/" element={<Navigate to="/register" />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/"                element={<Navigate to="/register" />} />
+        <Route path="/register"        element={<Register />} />
+        <Route path="/login"           element={<Login />} />
         <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
+        <Route path="/select-role"     element={<RoleSelection />} />
 
-        {/* Admin only */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute requiredRole="office administrator">
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Any authenticated user */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/add-visitor"
-          element={
-            <ProtectedRoute>
-              <AddVisitor />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/visitor-log"
-          element={
-            <ProtectedRoute>
-              <VisitorLog />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard" element={
+          <ProtectedRoute requiredRole="office administrator">
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile"     element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/add-visitor" element={<ProtectedRoute><AddVisitor /></ProtectedRoute>} />
+        <Route path="/visitor-log" element={<ProtectedRoute><VisitorLog /></ProtectedRoute>} />
       </Routes>
     </>
   );
@@ -74,6 +49,3 @@ function App() {
 }
 
 export default App;
-
-
-

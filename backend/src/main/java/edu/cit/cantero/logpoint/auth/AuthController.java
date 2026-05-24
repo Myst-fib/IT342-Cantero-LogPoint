@@ -1,5 +1,6 @@
 package edu.cit.cantero.logpoint.auth;
 
+import edu.cit.cantero.logpoint.email.EmailService;
 import edu.cit.cantero.logpoint.shared.User;
 import edu.cit.cantero.logpoint.shared.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -17,23 +18,20 @@ public class AuthController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public AuthController(UserService userService,
                           UserRepository userRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          EmailService emailService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
-    /**
-     * Register a new local user.
-     * FIX: Now returns UserResponse (JSON object) instead of plain String,
-     *      so the Android Retrofit call (Response<UserResponse>) parses correctly.
-     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
-        // Check for duplicate email before saving
         if (userRepository.findByEmail(req.email).isPresent()) {
             return ResponseEntity.status(409).body("Email already in use");
         }
@@ -42,7 +40,7 @@ public class AuthController {
         user.setFirstName(req.firstName);
         user.setLastName(req.lastName);
         user.setEmail(req.email);
-        user.setPassword(req.password); // raw password – UserService hashes it
+        user.setPassword(req.password);
         user.setAuthProvider("LOCAL");
 
         if (req.role != null && !req.role.isBlank()) {
@@ -50,17 +48,15 @@ public class AuthController {
         }
 
         User saved = userService.register(user);
-        // Return a proper JSON object so Retrofit's GsonConverter can deserialize it
+
+        // Send welcome email
+        emailService.sendWelcomeEmail(saved.getEmail(), saved.getFirstName(), saved.getRole());
+
         return ResponseEntity.ok(new UserDTO(saved));
     }
 
-    /**
-     * Login with email + password.
-     * Note: the "username" field in LoginRequest is treated as the email.
-     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req, HttpSession session) {
-        // req.username is the email address
         var userOpt = userService.login(req.username, req.password);
 
         if (userOpt.isEmpty()) {
@@ -68,6 +64,50 @@ public class AuthController {
         }
 
         User user = userOpt.get();
+        UserDTO userDTO = new UserDTO(user);
+        session.setAttribute("user", userDTO);
+        return ResponseEntity.ok(userDTO);
+    }
+
+    /**
+     * Called by the frontend role-selection page after a new Google user picks their role.
+     * Sets the role, sends a welcome email, and returns the full user DTO.
+     */
+    @PostMapping("/set-role")
+    public ResponseEntity<?> setRole(@RequestBody Map<String, String> body, HttpSession session) {
+        String email = body.get("email");
+        String role  = body.get("role");
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+        if (role == null || role.isBlank()) {
+            return ResponseEntity.badRequest().body("Role is required");
+        }
+
+        // Validate allowed roles
+        if (!role.equalsIgnoreCase("Office Administrator") && !role.equalsIgnoreCase("Guard")) {
+            return ResponseEntity.badRequest().body("Invalid role. Must be 'Office Administrator' or 'Guard'");
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        User user = userOpt.get();
+
+        // Only allow setting role when still PENDING
+        if (!"PENDING".equals(user.getRole()) && user.getRole() != null) {
+            return ResponseEntity.status(409).body("Role already assigned");
+        }
+
+        user.setRole(role);
+        userRepository.save(user);
+
+        // Send welcome email now that we know the role
+        emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName(), user.getRole());
+
         UserDTO userDTO = new UserDTO(user);
         session.setAttribute("user", userDTO);
         return ResponseEntity.ok(userDTO);

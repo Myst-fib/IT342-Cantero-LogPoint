@@ -79,10 +79,8 @@ public class SecurityConfig {
                     throws IOException, ServletException {
 
                 OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-                String email     = oauth2User.getAttribute("email");
-                String firstName = oauth2User.getAttribute("given_name");
-                String lastName  = oauth2User.getAttribute("family_name");
-                String picture   = oauth2User.getAttribute("picture");
+                String email   = oauth2User.getAttribute("email");
+                String picture = oauth2User.getAttribute("picture");
 
                 logger.info("OAuth2 login successful for: {}", email);
 
@@ -92,6 +90,7 @@ public class SecurityConfig {
                     if (userOpt.isPresent()) {
                         User user = userOpt.get();
 
+                        // Store in session
                         Map<String, Object> userInfo = new HashMap<>();
                         userInfo.put("id",           user.getId());
                         userInfo.put("email",        email);
@@ -100,19 +99,34 @@ public class SecurityConfig {
                         userInfo.put("picture",      picture);
                         userInfo.put("authProvider", "GOOGLE");
                         userInfo.put("role",         user.getRole());
-
                         request.getSession().setAttribute("oauth2User", userInfo);
 
                         String frontendUrl = getFrontendUrl();
-                        String redirectUrl = frontendUrl + "/oauth2/redirect?"
-                                + "id="         + user.getId()
-                                + "&email="     + (email               != null ? email               : "")
-                                + "&firstName=" + (user.getFirstName() != null ? user.getFirstName() : "")
-                                + "&lastName="  + (user.getLastName()  != null ? user.getLastName()  : "")
-                                + "&picture="   + (picture             != null ? picture             : "")
-                                + "&role="      + (user.getRole()      != null ? user.getRole()      : "USER");
 
-                        response.sendRedirect(redirectUrl);
+                        // ── New user with no role yet → role selection page ──
+                        if ("PENDING".equals(user.getRole()) || user.getRole() == null) {
+                            logger.info("New Google user — redirecting to role selection: {}", email);
+                            String redirectUrl = frontendUrl + "/select-role?"
+                                    + "id="         + user.getId()
+                                    + "&email="     + encode(email)
+                                    + "&firstName=" + encode(user.getFirstName())
+                                    + "&lastName="  + encode(user.getLastName())
+                                    + "&picture="   + encode(picture != null ? picture : "");
+                            response.sendRedirect(redirectUrl);
+
+                        } else {
+                            // Existing user with a role → straight to redirect handler
+                            logger.info("Existing Google user (role={}) — redirecting to dashboard: {}", user.getRole(), email);
+                            String redirectUrl = frontendUrl + "/oauth2/redirect?"
+                                    + "id="         + user.getId()
+                                    + "&email="     + encode(email)
+                                    + "&firstName=" + encode(user.getFirstName())
+                                    + "&lastName="  + encode(user.getLastName())
+                                    + "&picture="   + encode(picture != null ? picture : "")
+                                    + "&role="      + encode(user.getRole());
+                            response.sendRedirect(redirectUrl);
+                        }
+
                     } else {
                         logger.error("User not found in database after OAuth2 login!");
                         response.sendRedirect(getFrontendUrl() + "/login?error=user_not_found");
@@ -120,6 +134,16 @@ public class SecurityConfig {
                 } catch (Exception e) {
                     logger.error("Error in authentication success handler: ", e);
                     response.sendRedirect(getFrontendUrl() + "/login?error=server_error");
+                }
+            }
+
+            /** Simple URL encoding helper (avoids importing java.net.URLEncoder everywhere) */
+            private String encode(String value) {
+                if (value == null) return "";
+                try {
+                    return java.net.URLEncoder.encode(value, "UTF-8");
+                } catch (Exception e) {
+                    return value;
                 }
             }
         };
