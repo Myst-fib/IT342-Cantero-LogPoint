@@ -56,7 +56,7 @@ function VisitorLog() {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/sync/live/${gId}`, {
+        const res = await fetch(`https://logpoint-backend.onrender.com/api/sync/live/${gId}`, {
           credentials: 'include',
         });
         if (!res.ok) return;
@@ -108,7 +108,7 @@ function VisitorLog() {
     else setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/visit-logs', {
+      const response = await fetch('https://logpoint-backend.onrender.com/api/visit-logs', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -199,7 +199,7 @@ function VisitorLog() {
     setCheckingOut(logId);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/visit-logs/check-out/${logId}`, {
+      const response = await fetch(`https://logpoint-backend.onrender.com/api/visit-logs/check-out/${logId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -236,7 +236,7 @@ function VisitorLog() {
     setDeleteModal({ show: false, logId: null, visitorName: '' });
 
     try {
-      const response = await fetch(`http://localhost:8080/api/visit-logs/${logId}`, {
+      const response = await fetch(`https://logpoint-backend.onrender.com/api/visit-logs/${logId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -394,7 +394,7 @@ function VisitorLog() {
               className="synced-guard-clear"
               onClick={() => {
                 if (syncedGuard?.guardId) {
-                  fetch(`http://localhost:8080/api/sync/deactivate/${syncedGuard.guardId}`, {
+                  fetch(`https://logpoint-backend.onrender.com/api/sync/deactivate/${syncedGuard.guardId}`, {
                     method: 'POST', credentials: 'include',
                   }).catch(() => {});
                 }

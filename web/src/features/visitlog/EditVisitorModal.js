@@ -66,7 +66,7 @@ function EditVisitorModal({ log, onClose, onSave }) {
 
       console.log('Sending update payload:', payload); // Debug log
 
-      const response = await fetch(`http://localhost:8080/api/visitors/${log.id}`, {
+      const response = await fetch(`https://logpoint-backend.onrender.com/api/visitors/${log.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

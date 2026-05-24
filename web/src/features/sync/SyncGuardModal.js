@@ -10,7 +10,7 @@ import PersonOutlineIcon      from '@mui/icons-material/PersonOutline';
 import BlockIcon              from '@mui/icons-material/Block';
 import HistoryIcon            from '@mui/icons-material/History';
 
-const API = 'http://localhost:8080';
+const API = 'https://logpoint-backend.onrender.com';
 
 // ── Get logged-in admin ID for user-scoped localStorage ───────────────────────
 const getCurrentUserId = () => {

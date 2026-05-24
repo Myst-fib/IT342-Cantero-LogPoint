@@ -125,7 +125,7 @@ function AddVisitor() {
     console.log('Submitting to /api/visitors:', submissionData);
 
     try {
-      const response = await fetch('http://localhost:8080/api/visitors', {
+      const response = await fetch('https://logpoint-backend.onrender.com/api/visitors', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'

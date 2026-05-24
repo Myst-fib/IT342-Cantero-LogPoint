@@ -111,7 +111,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch("https://logpoint-backend.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -301,7 +301,7 @@ function Login() {
           
           <button 
             className="google-btn"
-            onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+            onClick={() => window.location.href = 'https://logpoint-backend.onrender.com/oauth2/authorization/google'}
             disabled={loading}
           >
             <img 

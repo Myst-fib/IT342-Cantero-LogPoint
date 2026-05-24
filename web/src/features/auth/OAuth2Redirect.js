@@ -28,7 +28,7 @@ function OAuth2Redirect() {
       localStorage.setItem('user', JSON.stringify(user));
 
       // Call backend to complete login
-      fetch('http://localhost:8080/api/auth/oauth2/success', {
+      fetch('https://logpoint-backend.onrender.com/api/auth/oauth2/success', {
         method: 'GET',
         credentials: 'include',
         headers: {

@@ -27,7 +27,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 
-const API = 'http://localhost:8080';
+const API = 'https://logpoint-backend.onrender.com';
 
 function formatDate(dateStr) {
   if (!dateStr) return 'N/A';

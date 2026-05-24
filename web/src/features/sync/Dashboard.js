@@ -31,7 +31,7 @@ ChartJS.register(
   Title, Tooltip, Legend, PointElement, LineElement
 );
 
-const API = 'http://localhost:8080';
+const API = 'https://logpoint-backend.onrender.com';
 
 // ── Get logged-in admin ID for user-scoped localStorage ───────────────────────
 const getCurrentUserId = () => {
