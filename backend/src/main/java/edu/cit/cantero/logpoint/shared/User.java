@@ -36,8 +36,10 @@ public class User {
     @Column(name = "provider_id")
     private String providerId; // Google's unique user ID
 
-    @Column(name = "picture_url")
-    private String pictureUrl; // User's profile picture from Google
+    // columnDefinition = "TEXT" allows storing large base64 image strings
+    // (avoids the default VARCHAR(255) limit which causes a 500 on picture upload)
+    @Column(name = "picture_url", columnDefinition = "TEXT")
+    private String pictureUrl;
 
     // Constructors
     public User() {}

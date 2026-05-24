@@ -145,4 +145,51 @@ public class UserController {
 
         return ResponseEntity.ok(updatedDTO);
     }
+
+    /**
+     * PUT /api/user/update-picture
+     * Updates the profile picture of the currently authenticated user.
+     * Accepts: pictureUrl (base64 data URL string, e.g. "data:image/jpeg;base64,...")
+     * The image is stored directly in the database as a base64 string.
+     */
+    @PutMapping("/update-picture")
+    public ResponseEntity<?> updatePicture(
+            @RequestBody Map<String, String> body,
+            HttpSession session) {
+
+        UserDTO sessionUser = (UserDTO) session.getAttribute("user");
+        if (sessionUser == null) {
+            return ResponseEntity.status(401).body("Not authenticated");
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(sessionUser.getEmail());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        String pictureData = body.get("pictureUrl");
+
+        if (pictureData == null || pictureData.isBlank()) {
+            return ResponseEntity.status(400).body("No picture data provided.");
+        }
+
+        // Basic validation: must be a data URL
+        if (!pictureData.startsWith("data:image/")) {
+            return ResponseEntity.status(400).body("Invalid image format.");
+        }
+
+        // Rough size check: base64 of 2MB ≈ ~2.7M chars
+        if (pictureData.length() > 3_000_000) {
+            return ResponseEntity.status(400).body("Image is too large. Please use an image under 2MB.");
+        }
+
+        User user = userOpt.get();
+        user.setPictureUrl(pictureData);
+
+        User saved = userRepository.save(user);
+        UserDTO updatedDTO = new UserDTO(saved);
+        session.setAttribute("user", updatedDTO);
+
+        return ResponseEntity.ok(updatedDTO);
+    }
 }

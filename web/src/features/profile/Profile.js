@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Profile.css';
 
@@ -25,6 +25,7 @@ import CloudOutlinedIcon from '@mui/icons-material/CloudOutlined';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 
 const API = 'http://localhost:8080';
 
@@ -498,6 +499,10 @@ function Profile() {
   const [showEditAccount, setShowEditAccount] = useState(false);
   const [showSecurity, setShowSecurity] = useState(false);
   const [banner, setBanner] = useState({ show: false, message: '', type: '' });
+  const [uploadingPicture, setUploadingPicture] = useState(false);
+
+  // Hidden file input ref for picture upload
+  const fileInputRef = useRef(null);
 
   const showBanner = (message, type = 'success') => {
     setBanner({ show: true, message, type });
@@ -561,6 +566,70 @@ function Profile() {
     showBanner('Profile updated successfully!', 'success');
   };
 
+  // ── Profile Picture Upload ───────────────────────
+  const handleAvatarClick = () => {
+    if (!uploadingPicture) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate type
+    if (!file.type.startsWith('image/')) {
+      showBanner('Please select a valid image file.', 'error');
+      return;
+    }
+
+    // Validate size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      showBanner('Image must be under 2MB.', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target.result; // "data:image/jpeg;base64,..."
+      setUploadingPicture(true);
+
+      try {
+        const res = await fetch(`${API}/api/user/update-picture`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pictureUrl: base64 }),
+        });
+
+        if (!res.ok) {
+          const msg = await res.text();
+          throw new Error(msg || 'Failed to upload picture.');
+        }
+
+        const updated = await res.json();
+
+        // Update localStorage
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          localStorage.setItem('user', JSON.stringify({ ...parsed, pictureUrl: updated.pictureUrl }));
+        }
+
+        setUser(prev => ({ ...prev, pictureUrl: updated.pictureUrl }));
+        showBanner('Profile picture updated!', 'success');
+      } catch (err) {
+        showBanner(err.message || 'Failed to upload picture.', 'error');
+      } finally {
+        setUploadingPicture(false);
+        // Reset input so the same file can be re-selected if needed
+        e.target.value = '';
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   // ── Loading ──────────────────────────────
   if (loading) {
     return (
@@ -602,6 +671,15 @@ function Profile() {
         </div>
       )}
 
+      {/* Hidden file input for picture upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+
       <div className="profile-container">
         {/* Page Header */}
         <div className="page-header">
@@ -614,15 +692,30 @@ function Profile() {
         <div className="profile-content">
           {/* ── Left: Profile Card ──────────────── */}
           <div className="profile-card">
-            {/* Avatar */}
+            {/* Avatar with upload overlay */}
             <div className="avatar-wrap">
-              <div className="avatar-large">
-                {user.pictureUrl ? (
+              <div
+                className={`avatar-large avatar-clickable ${uploadingPicture ? 'avatar-uploading' : ''}`}
+                onClick={handleAvatarClick}
+                title="Click to change profile picture"
+              >
+                {uploadingPicture ? (
+                  <div className="avatar-upload-spinner" />
+                ) : user.pictureUrl ? (
                   <img src={user.pictureUrl} alt={`${user.firstName} ${user.lastName}`} />
                 ) : (
                   <div className="avatar-fallback-large">{initials}</div>
                 )}
+
+                {/* Camera overlay shown on hover */}
+                {!uploadingPicture && (
+                  <div className="avatar-overlay">
+                    <CameraAltOutlinedIcon className="avatar-overlay-icon" />
+                    <span className="avatar-overlay-text">Change</span>
+                  </div>
+                )}
               </div>
+
               {isOAuth2 && (
                 <span className="oauth-badge" title="Signed in with Google">
                   <CloudOutlinedIcon style={{ fontSize: 14 }} />
