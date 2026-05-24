@@ -117,7 +117,7 @@ function VisitorLog() {
 
       if (response.ok) {
         const data = await response.json();
-        const sorted = data.sort((a, b) => new Date(b.timeIn) - new Date(a.timeIn));
+        const sorted = data.sort((a, b) => new Date(b.createdAt || b.timeIn) - new Date(a.createdAt || a.timeIn));
         setVisitLogs(sorted);
         if (isRefresh) showBanner('Records refreshed successfully', 'success');
       } else {
@@ -175,7 +175,7 @@ function VisitorLog() {
       });
     }
 
-    result.sort((a, b) => new Date(b.timeIn) - new Date(a.timeIn));
+    result.sort((a, b) => new Date(b.createdAt || b.timeIn) - new Date(a.createdAt || a.timeIn));
 
     setFilteredLogs(result);
     setCurrentPage(1);

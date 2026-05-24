@@ -66,7 +66,7 @@ public class VisitLogService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return visitLogRepository.findByCreatedBy_IdOrderByTimeInDesc(user.getId())
+        return visitLogRepository.findByCreatedBy_IdOrderByCreatedAtDesc(user.getId())
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -76,7 +76,7 @@ public class VisitLogService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return visitLogRepository.findByCreatedBy_IdOrderByTimeInDesc(user.getId())
+        return visitLogRepository.findByCreatedBy_IdOrderByCreatedAtDesc(user.getId())
                 .stream()
                 .filter(visit -> "ACTIVE".equals(visit.getStatus()))
                 .map(this::convertToDTO)
