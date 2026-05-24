@@ -36,24 +36,16 @@ public class SyncRequestController {
     }
 
     private UserDTO resolveUser(HttpSession session, String headerEmail, String headerRole) {
-        UserDTO sessionUser = resolveUser(session, headerEmail, headerRole);
+        // 1. Try session cookie (works on localhost)
+        UserDTO sessionUser = (UserDTO) session.getAttribute("user");
         if (sessionUser != null) return sessionUser;
+        // 2. Fall back to X-User-Email header (works on Render cross-domain)
         if (headerEmail != null && !headerEmail.isBlank()) {
-            // Reconstruct a minimal UserDTO from headers for cross-domain requests
-            return edu.cit.cantero.logpoint.shared.UserRepository.class.cast(null) == null
-                ? buildUserFromHeader(headerEmail, headerRole)
-                : null;
+            try {
+                Optional<edu.cit.cantero.logpoint.shared.User> userOpt = userRepository.findByEmail(headerEmail);
+                if (userOpt.isPresent()) return new UserDTO(userOpt.get());
+            } catch (Exception ignored) {}
         }
-        return null;
-    }
-
-    private UserDTO buildUserFromHeader(String email, String role) {
-        try {
-            Optional<edu.cit.cantero.logpoint.shared.User> userOpt = userRepository.findByEmail(email);
-            if (userOpt.isPresent()) {
-                return new UserDTO(userOpt.get());
-            }
-        } catch (Exception ignored) {}
         return null;
     }
 

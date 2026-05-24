@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface VisitLogRepository extends JpaRepository<VisitLog, Long> {
     List<VisitLog> findByVisitor(Visitor visitor);
-    List<VisitLog> findByCreatedBy_Id(Long userId);
+    List<VisitLog> findByCreatedBy_IdOrderByTimeInDesc(Long userId);
     List<VisitLog> findByStatus(String status);
     
     @Query("SELECT v FROM VisitLog v WHERE v.timeIn BETWEEN :startDate AND :endDate")
