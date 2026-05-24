@@ -31,13 +31,29 @@ function NavBar() {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
-        // Session expired — clear local storage and redirect to login
-        localStorage.removeItem('user');
-        localStorage.removeItem('isLoggedIn');
-        navigate('/login');
+        // Session cookie missing (cross-domain on Render) — fall back to localStorage.
+        // Only redirect to login if localStorage is also empty (truly logged out).
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          try {
+            setUser(JSON.parse(stored));
+          } catch {
+            localStorage.removeItem('user');
+            localStorage.removeItem('isLoggedIn');
+            navigate('/login');
+          }
+        } else {
+          localStorage.removeItem('isLoggedIn');
+          navigate('/login');
+        }
       }
     } catch (error) {
+      // Network error — fall back to localStorage so the user isn't kicked out
       console.error('[NavBar] Error fetching user:', error);
+      const stored = localStorage.getItem('user');
+      if (stored) {
+        try { setUser(JSON.parse(stored)); } catch { /* ignore */ }
+      }
     } finally {
       setLoading(false);
     }
@@ -54,9 +70,9 @@ function NavBar() {
         credentials: 'include',
       });
 
-      // Session expired mid-session — re-fetch user to force login redirect
+      // Session expired mid-session — only redirect if localStorage is also gone
       if (res.status === 401) {
-        fetchUserData();
+        if (!localStorage.getItem('user')) fetchUserData();
         return;
       }
 
@@ -380,6 +396,3 @@ function NavBar() {
 }
 
 export default NavBar;
-
-
-
