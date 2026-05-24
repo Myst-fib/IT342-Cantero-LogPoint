@@ -45,13 +45,14 @@ public class CheckInFacade {
                 });
     }
 
-    public VisitLog createVisitLog(Visitor visitor, Purpose purpose, String hostName, User createdBy) {
+    public VisitLog createVisitLog(Visitor visitor, Purpose purpose, String hostName, User createdBy, LocalDateTime timeIn) {
         VisitLog visitLog = new VisitLog();
         visitLog.setVisitor(visitor);
         visitLog.setPurpose(purpose);
         visitLog.setHostName(hostName);
-        visitLog.setCreatedBy(createdBy);  // ← add this
-        visitLog.setTimeIn(LocalDateTime.now());
+        visitLog.setCreatedBy(createdBy);
+        // Use the user-provided timeIn if given, otherwise default to now
+        visitLog.setTimeIn(timeIn != null ? timeIn : LocalDateTime.now());
         visitLog.setStatus("ACTIVE");
         return visitLogRepository.save(visitLog);
     }

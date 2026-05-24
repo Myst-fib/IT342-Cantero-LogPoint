@@ -116,11 +116,22 @@ function AddVisitor() {
     }
 
     // Prepare data for backend - Matches VisitorDTO exactly
+    // Build a full ISO datetime from the user-selected timeIn (HH:mm) + today's date in PH time
+    const buildTimeInISO = () => {
+      const now = new Date();
+      const phDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+      const [hours, minutes] = (formData.timeIn || '').split(':').map(Number);
+      if (isNaN(hours) || isNaN(minutes)) return null;
+      phDate.setHours(hours, minutes, 0, 0);
+      return phDate.toISOString();
+    };
+
     const submissionData = {
       visitorName: formData.visitorName,
       purpose: formData.purpose === 'Other' ? formData.otherPurpose : formData.purpose,
       host: formData.host,  // Note: 'host' not 'hostName' - matches VisitorDTO
       contactNo: formData.contactNumber,  // Note: 'contactNo' matches VisitorDTO
+      timeIn: buildTimeInISO(),  // Send user-selected time to backend
     };
 
     console.log('Submitting to /api/visitors:', submissionData);

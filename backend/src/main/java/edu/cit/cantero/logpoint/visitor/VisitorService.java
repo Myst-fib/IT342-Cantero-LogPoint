@@ -33,7 +33,7 @@ public class VisitorService {
 
         Visitor savedVisitor = checkInFacade.saveVisitor(visitorDTO);
         Purpose purpose = checkInFacade.findOrCreatePurpose(visitorDTO.getPurpose());
-        checkInFacade.createVisitLog(savedVisitor, purpose, visitorDTO.getHost(), user);
+        checkInFacade.createVisitLog(savedVisitor, purpose, visitorDTO.getHost(), user, visitorDTO.getTimeIn());
         return convertToDTO(savedVisitor);
     }
 
