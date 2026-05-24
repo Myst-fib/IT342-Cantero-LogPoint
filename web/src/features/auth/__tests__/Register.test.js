@@ -27,3 +27,6 @@ test('first input field accepts text', () => {
   fireEvent.change(inputs[0], { target: { value: 'John' } });
   expect(inputs[0].value).toBe('John');
 });
+
+
+

@@ -41,3 +41,6 @@ test('renders register button', () => {
   const registerButton = screen.getByRole('button', { name: /register/i });
   expect(registerButton).toBeInTheDocument();
 });
+
+
+

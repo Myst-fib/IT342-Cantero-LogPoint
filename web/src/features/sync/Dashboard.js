@@ -31,7 +31,7 @@ ChartJS.register(
   Title, Tooltip, Legend, PointElement, LineElement
 );
 
-const API = 'https://logpoint-backend.onrender.com';
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 
 // ── Get logged-in admin ID for user-scoped localStorage ───────────────────────
 const getCurrentUserId = () => {
@@ -777,3 +777,6 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
+

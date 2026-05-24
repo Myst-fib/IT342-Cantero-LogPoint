@@ -20,3 +20,6 @@ test('AddVisitor has input fields', () => {
   const inputs = document.querySelectorAll('input');
   expect(inputs.length).toBeGreaterThanOrEqual(0);
 });
+
+
+

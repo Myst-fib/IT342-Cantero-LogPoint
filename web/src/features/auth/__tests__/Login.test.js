@@ -34,3 +34,6 @@ test('password field updates on change', () => {
   fireEvent.change(inputs[1], { target: { name: 'password', value: 'Password@1' } });
   expect(inputs[1].value).toBe('Password@1');
 });
+
+
+

@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import './NavBar.css';
 import logo from '../features/visitors/assets/logpoint_logo.png';
 
-const API = 'https://logpoint-backend.onrender.com';
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 
 function NavBar() {
   const navigate = useNavigate();
@@ -380,3 +380,6 @@ function NavBar() {
 }
 
 export default NavBar;
+
+
+

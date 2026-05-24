@@ -20,3 +20,6 @@ test('VisitorLog has elements in the DOM', () => {
   const elements = document.querySelectorAll('div');
   expect(elements.length).toBeGreaterThan(0);
 });
+
+
+

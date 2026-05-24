@@ -27,7 +27,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CameraAltOutlinedIcon from '@mui/icons-material/CameraAltOutlined';
 
-const API = 'https://logpoint-backend.onrender.com';
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 
 function formatDate(dateStr) {
   if (!dateStr) return 'N/A';
@@ -941,3 +941,6 @@ function Profile() {
 }
 
 export default Profile;
+
+
+

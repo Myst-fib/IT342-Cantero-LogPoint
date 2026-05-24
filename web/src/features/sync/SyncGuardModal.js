@@ -10,7 +10,7 @@ import PersonOutlineIcon      from '@mui/icons-material/PersonOutline';
 import BlockIcon              from '@mui/icons-material/Block';
 import HistoryIcon            from '@mui/icons-material/History';
 
-const API = 'https://logpoint-backend.onrender.com';
+const API = process.env.REACT_APP_API_URL || 'https://logpoint-backend.onrender.com';
 
 // ── Get logged-in admin ID for user-scoped localStorage ───────────────────────
 const getCurrentUserId = () => {
@@ -527,3 +527,6 @@ const SyncGuardModal = ({ onClose, onSyncComplete }) => {
 };
 
 export default SyncGuardModal;
+
+
+

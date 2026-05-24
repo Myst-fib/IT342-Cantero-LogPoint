@@ -20,3 +20,6 @@ test('NavBar has elements in the DOM', () => {
   const elements = document.querySelectorAll('div, nav, header');
   expect(elements.length).toBeGreaterThanOrEqual(0);
 });
+
+
+
