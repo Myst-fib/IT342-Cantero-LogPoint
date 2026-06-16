@@ -9,7 +9,7 @@
 [![React](https://img.shields.io/badge/React-Frontend-9CB080?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
 [![MySQL](https://img.shields.io/badge/MySQL-Database-273338?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 
-*IT342 – System Integration · Lab 1 · Patrick Cantero*
+*IT342 – System Integration · LogPoint · Patrick Cantero*
 
 </div>
 
